@@ -74,9 +74,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class DataModelBase implements Cloneable{
     private LinkedHashSet<String> cols;
     private ArrayList<HashMap<String, Object>> rows;
-    /*
-    * jar파일 말기. 라이브파일은 어떻게? jackson
-    */
 
     private HashMap<String, Object> parseJsonObjectToDataModel(JsonNode node) {
         HashMap<String, Object> row = new HashMap<>();
@@ -212,10 +209,6 @@ public class DataModelBase implements Cloneable{
      * @throws DataException if no valid conversion can be performed.
      */
     protected Object convertDataModelToEntity(Object value, Class<?> targetType){
-        //체크 배열이나 객체는??
-        // value => dataModel의 변환될 값
-        // targetType => entity의 변환될 타입
-        
         if (value == null) {
             return convertDataModelToEntityValueIsNull(value, targetType);
         }
