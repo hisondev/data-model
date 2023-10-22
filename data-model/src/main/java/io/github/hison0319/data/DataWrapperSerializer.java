@@ -11,9 +11,8 @@ public class DataWrapperSerializer extends JsonSerializer<DataWrapper> {
 
     @Override
     public void serialize(DataWrapper value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeStartObject(); // JSON의 시작 { 를 작성
+        gen.writeStartObject();
 
-        // String 형태의 데이터를 JSON에 쓰기
         for (Map.Entry<String, String> entry : value.getStrings().entrySet()) {
             if (entry.getValue() != null) {
                 gen.writeStringField(entry.getKey(), entry.getValue());
@@ -22,14 +21,11 @@ public class DataWrapperSerializer extends JsonSerializer<DataWrapper> {
             }
         }
 
-        // DataModel 형태의 데이터를 JSON에 쓰기
         for (Map.Entry<String, DataModelBase> entry : value.getDataModels().entrySet()) {
             gen.writeFieldName(entry.getKey());
-
-            // DataModel의 getConvertJson 메서드를 사용하여 직렬화합니다.
             gen.writeTree(entry.getValue().getConvertJson());
         }
 
-        gen.writeEndObject(); // JSON의 종료 } 를 작성
+        gen.writeEndObject();
     }
 }
