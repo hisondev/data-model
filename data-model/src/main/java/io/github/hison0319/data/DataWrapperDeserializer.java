@@ -25,11 +25,9 @@ public class DataWrapperDeserializer extends JsonDeserializer<DataWrapper> {
             JsonNode valueNode = field.getValue();
 
             if (valueNode.isObject()) {
-                // Deserializing as DataModel
                 DataModelBase dataModel = new DataModelBase(valueNode);
                 dataWrapper.setDataModel(key, dataModel);
             } else if (valueNode.isArray()) {
-                // Deserializing array as DataModel
                 DataModelBase dataModel = new DataModelBase(valueNode);
                 dataWrapper.setDataModel(key, dataModel);
             } else if (valueNode.isNull() || valueNode instanceof NullNode) {
