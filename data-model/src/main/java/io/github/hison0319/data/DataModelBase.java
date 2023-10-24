@@ -722,11 +722,7 @@ public class DataModelBase implements Cloneable{
             } else if (t instanceof Tuple) {
                 List<Tuple> tuples = (List<Tuple>) newRows;
                 for(Tuple tuple : tuples) {
-                    HashMap<String, Object> row = new HashMap<>();
-                    for(TupleElement<?> element : tuple.getElements()) {
-                        row.put(element.getAlias(), tuple.get(element));
-                    }
-                    addRow(row);
+                    addRow(tuple);
                 }
                 
             } else if (t instanceof Object){
