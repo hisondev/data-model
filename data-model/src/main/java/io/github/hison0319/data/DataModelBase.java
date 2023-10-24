@@ -589,16 +589,7 @@ public class DataModelBase implements Cloneable{
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
 
-        Enumeration<String> attributeNames = session.getAttributeNames();
-        HashMap<String, Object> row = new HashMap<String, Object>();
-
-        while(attributeNames.hasMoreElements()) {
-            String attributeName = attributeNames.nextElement();
-            Object attributeValue = session.getAttribute(attributeName);
-
-            row.put(attributeName, attributeValue);
-        }
-        addRow(row);
+        addRow(session);
     }
 
     /**
@@ -618,19 +609,7 @@ public class DataModelBase implements Cloneable{
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
 
-        try {
-            ResultSetMetaData metaData = rs.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            while (rs.next()) {
-                HashMap<String, Object> row = new HashMap<>();
-                for (int i = 1; i <= columnCount; i++) {
-                    row.put(metaData.getColumnName(i), rs.getObject(i));
-                }
-                addRow(row);
-            }
-        } catch (Exception e) {
-            throw new DataException(e.toString());
-        }
+        addRow(rs);
     }
 
     /**
