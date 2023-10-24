@@ -41,6 +41,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
+ * {@inheritDoc}
  * Represents the base structure for data models designed for structured data communication
  * between the client and the server. This class provides a mechanism to handle data as key-value pairs
  * where the values are maintained as strings. It facilitates data conversion and formatting, especially 
@@ -419,6 +420,7 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
+     * {@inheritDoc}
      * Provides the date format pattern to be used when converting an entity's {@link LocalDateTime} value to a string representation in the data model.
      * 
      * <p>This method is invoked by {@code convertEntityToDataModel} when it encounters a value of type {@link LocalDateTime}. The returned format pattern dictates how the date-time value will be represented as a string in the data model.</p>
@@ -432,6 +434,7 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
+     * {@inheritDoc}
      * Provides an array of date format patterns to be used when attempting to convert a string representation in the data model to an entity's {@link LocalDateTime} value.
      * 
      * <p>This method is used by {@code convertDataModelToEntity} (specifically the {@code convertDataModelToEntityValueIsString} method) when the target type for conversion is {@link LocalDateTime}. The method attempts to parse the string using each pattern in the returned array, in order, until a successful conversion is achieved.</p>
@@ -454,6 +457,7 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
+     * {@inheritDoc}
      * Default constructor for the DataModelBase class.
      *
      * <p>Initializes the columns (cols) as a {@link LinkedHashSet} to maintain the order 
@@ -553,6 +557,10 @@ public class DataModelBase implements Cloneable{
      * often returned as Object arrays, into a structured {@link DataModelBase}, negating 
      * the need for manual conversion or entity creation.</p>
      * 
+     * <p><b>Notice:</b> The length of the <code>columnNames</code> array should match the number 
+     * of columns in each object array within the <code>queryResults</code>. If there's a mismatch, 
+     * it may lead to out of bounds exceptions or missing data.</p>
+     * 
      * @param data the Object array containing the data to initialize the DataModel.
      * @param columnNames the array of column names corresponding to the data elements.
      */
@@ -560,15 +568,7 @@ public class DataModelBase implements Cloneable{
         this.cols = new LinkedHashSet<>(Arrays.asList(columnNames));
         this.rows = new ArrayList<HashMap<String, Object>>();
         
-        if (queryResult != null && columnNames != null && queryResult.length == columnNames.length) {
-            HashMap<String, Object> row = new HashMap<>();
-            for (int i = 0; i < columnNames.length; i++) {
-                row.put(columnNames[i], queryResult[i]);
-            }
-            addRow(row);
-        } else {
-            throw new DataException("Mismatch between data and column names, or invalid input.");
-        }
+        addRow(queryResult, columnNames);
     }
 
     /**
@@ -754,13 +754,7 @@ public class DataModelBase implements Cloneable{
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
     
-        for(Object[] queryResult : queryResults) {
-            HashMap<String, Object> row = new HashMap<>();
-            for(int i = 0; i < queryResult.length; i++) {
-                row.put(columnNames[i], queryResult[i]);
-            }
-            addRow(row);
-        }
+        addRows(queryResults, columnNames);
     }
 
     /**
@@ -1261,17 +1255,22 @@ public class DataModelBase implements Cloneable{
      * @param queryResult An array of objects containing data to be added as a new row.
      * @param columnNames An array of strings where each string represents the column name for the respective data in {@code queryResult}.
      * @return The current DataModelBase instance with the added row.
+     * 
+     * <p><b>Notice:</b> The length of the <code>columnNames</code> array should match the number 
+     * of columns in each object array within the <code>queryResults</code>. If there's a mismatch, 
+     * it may lead to out of bounds exceptions or missing data.</p>
      *
      * <p><b>Example:</b></p>
      * <pre>
      * {@code
      * // Example result from a query
-     * Object[] queryResult = new Object[]{"John Doe", 25, "Engineer"};
+     * List<Object[]> results = memberRepository.findAllProjectedBy();
      * String[] columnNames = new String[]{"name", "age", "profession"};
      * 
      * // Create a new DataModelBase and add the result as a row
      * DataModelBase dataModelBase = new DataModelBase();
-     * dataModelBase.addRow(queryResult, columnNames);
+     * for (Object[] result : results) {
+     *     dataModel.addRow(result, columnNames);
      * }
      * </pre>
      */
@@ -1475,11 +1474,7 @@ public class DataModelBase implements Cloneable{
             } else if (first instanceof Tuple) {
                 for (T tupleItem : newRows) {
                     Tuple tuple = (Tuple) tupleItem;
-                    HashMap<String, Object> hm = new HashMap<>();
-                    for (TupleElement<?> element : tuple.getElements()) {
-                        hm.put(element.getAlias(), tuple.get(element));
-                    }
-                    addRow(hm);
+                    addRow(tuple);
                 }
             } else if (first instanceof Object){
                 for (T entity : newRows) {
@@ -1497,12 +1492,20 @@ public class DataModelBase implements Cloneable{
      * 
      * <p>This method is useful when fetching multiple records from a database using JPA, 
      * and you want to convert the results into a DataModelBase representation.</p>
-     *
+     * 
+     * <p><b>Notice:</b> The length of the <code>columnNames</code> array should match the number 
+     * of columns in each object array within the <code>queryResults</code>. If there's a mismatch, 
+     * it may lead to out of bounds exceptions or missing data.</p>
+     * 
      * <p><b>Example:</b></p>
      * <pre>
-     * Query query = entityManager.createNativeQuery("SELECT name, age FROM Person");
-     * List&lt;Object[]&gt; results = query.getResultList();
-     * String[] columnNames = {"name", "age"};
+     * 
+     * MemberRepository extends JpaRepository&lt;Member, Long&gt;
+     * @Query("SELECT m.id, m.deptcode, m.email, m.membername, m.regdate FROM Member m")
+     * List&lt;Object[]&gt; findAllMember();
+     * 
+     * List&lt;Object[]&gt; results = memberRepository.findAllMember();
+     * String[] columnNames = {"id", "deptcode", "email", "membername", "regdate"};
      * DataModelBase dataModelBase = new DataModelBase();
      * dataModelBase.addRows(results, columnNames);
      * </pre>
@@ -1512,13 +1515,8 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance with the added rows.
      */
     public DataModelBase addRows(List<Object[]> queryResults, String[] columnNames) {
-    
         for(Object[] result : queryResults) {
-            HashMap<String, Object> row = new HashMap<>();
-            for(int i = 0; i < result.length; i++) {
-                row.put(columnNames[i], result[i]);
-            }
-            addRow(row);
+            addRow(result, columnNames);
         }
         return this;
     }
