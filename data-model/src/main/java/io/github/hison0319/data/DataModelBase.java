@@ -539,13 +539,7 @@ public class DataModelBase implements Cloneable{
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
         
-        if (tuple != null) {
-            HashMap<String, Object> row = new HashMap<>();
-            for (TupleElement<?> element : tuple.getElements()) {
-                row.put(element.getAlias(), tuple.get(element));
-            }
-            addRow(row);
-        }
+        addRow(tuple);
     }
 
     /**
