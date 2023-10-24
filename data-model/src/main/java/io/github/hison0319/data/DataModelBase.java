@@ -1250,7 +1250,10 @@ public class DataModelBase implements Cloneable{
         if (tuple != null) {
             HashMap<String, Object> row = new HashMap<>();
             for (TupleElement<?> element : tuple.getElements()) {
-                row.put(element.getAlias(), tuple.get(element));
+                if(element.getAlias() == null) {
+                    throw new DataException("Please specify an alias in your query.");
+                }
+                row.put(element.getAlias(), tuple.get(element.getAlias()));
             }
             addRow(row);
         }
