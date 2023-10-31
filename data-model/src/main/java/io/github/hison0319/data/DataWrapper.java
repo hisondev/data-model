@@ -95,7 +95,7 @@ public class DataWrapper{
      * @param key   the key with which the specified value is to be associated.
      * @param value value to be associated with the specified key.
      */
-    public void setString(String key, String value) {
+    public void putString(String key, String value) {
         strings.put(key, value);
     }
 
@@ -118,7 +118,7 @@ public class DataWrapper{
      * @param key   the key with which the specified value is to be associated.
      * @param value value to be associated with the specified key. It must be an instance of {@link DataModelBase}.
      */
-    public void setDataModel(String key, DataModelBase value) {
+    public void putDataModel(String key, DataModelBase value) {
         dataModels.put(key, value);
     }
 
