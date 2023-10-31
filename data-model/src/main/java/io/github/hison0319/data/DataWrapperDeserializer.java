@@ -26,14 +26,14 @@ public class DataWrapperDeserializer extends JsonDeserializer<DataWrapper> {
 
             if (valueNode.isObject()) {
                 DataModelBase dataModel = new DataModelBase(valueNode);
-                dataWrapper.setDataModel(key, dataModel);
+                dataWrapper.putDataModel(key, dataModel);
             } else if (valueNode.isArray()) {
                 DataModelBase dataModel = new DataModelBase(valueNode);
-                dataWrapper.setDataModel(key, dataModel);
+                dataWrapper.putDataModel(key, dataModel);
             } else if (valueNode.isNull() || valueNode instanceof NullNode) {
-                dataWrapper.setString(key, null);
+                dataWrapper.putString(key, null);
             } else {
-                dataWrapper.setString(key, valueNode.asText());
+                dataWrapper.putString(key, valueNode.asText());
             }
         }
 
