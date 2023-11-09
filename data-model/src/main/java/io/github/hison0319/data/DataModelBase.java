@@ -1932,18 +1932,9 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance retaining only the specified columns.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
      */
-    public DataModelBase validColumns(String... columns) {
+    public DataModelBase setValidColumns(String... columns) {
         Set<String> columnSet = new HashSet<>(Arrays.asList(columns));
-        for (String column : columns) {
-            if (!hasColumn(column)) {
-                throw new DataException("Column " + column + " does not exist.");
-            }
-        }
-        cols.retainAll(columnSet);
-        for (HashMap<String, Object> row : rows) {
-            row.keySet().retainAll(columnSet);
-        }
-        return this;
+        return setValidColumns(columnSet);
     }
 
     /**
@@ -1955,18 +1946,9 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance retaining only the specified columns.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
      */
-    public DataModelBase validColumns(List<String> columns) {
+    public DataModelBase setValidColumns(List<String> columns) {
         Set<String> columnSet = new HashSet<>(columns);
-        for (String column : columns) {
-            if (!hasColumn(column)) {
-                throw new DataException("Column " + column + " does not exist.");
-            }
-        }
-        cols.retainAll(columnSet);
-        for (HashMap<String, Object> row : rows) {
-            row.keySet().retainAll(columnSet);
-        }
-        return this;
+        return setValidColumns(columnSet);
     }
 
     /**
@@ -1978,7 +1960,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance retaining only the specified columns.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
      */
-    public DataModelBase validColumns(Set<String> columns) {
+    public DataModelBase setValidColumns(Set<String> columns) {
         for (String column : columns) {
             if (!hasColumn(column)) {
                 throw new DataException("Column " + column + " does not exist.");
