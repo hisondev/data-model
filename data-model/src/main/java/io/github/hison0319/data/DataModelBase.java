@@ -1777,13 +1777,13 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
-     * Removes the row at the specified row index from the DataModel.
+     * Removes the row at the specified row index from the DataModel and returns it.
      * 
      * <p><b>Example:</b></p>
      * <pre>
      * DataModelBase dataModel = new DataModelBase();
      * // ... [Populate the data model with rows of data]
-     * dataModel.removeRow(2);  // Removes the third row from the data model
+     * HashMap<String, Object> removedRow = dataModel.removeRow(2); // Removes and returns the third row from the data model
      * </pre>
      *
      * <p><b>Note:</b></p>
@@ -1793,13 +1793,12 @@ public class DataModelBase implements Cloneable{
      * </ul>
      *
      * @param rowIndex The index of the row (0-based) to be removed.
-     * @return The current DataModelBase instance with the row removed.
+     * @return The HashMap representing the removed row.
      * @throws DataException if the rowIndex is out of range or rows are empty.
      */
-    public DataModelBase removeRow(int rowIndex) {
+    public HashMap<String, Object> removeRow(int rowIndex) {
         checkRowsRange(rowIndex);
-        rows.remove(rowIndex);
-        return this;
+        return rows.remove(rowIndex);
     }
 
     /**
