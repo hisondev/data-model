@@ -1,4 +1,4 @@
-package io.github.hison0319.data;
+package com.test.boot02.common.data;
 
 import java.util.HashMap;
 
@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  */
 @JsonDeserialize(using = DataWrapperDeserializer.class)
 @JsonSerialize(using = DataWrapperSerializer.class)
-public class DataWrapper{
+public class DataWrapper implements Cloneable{
     private HashMap<String, String> strings;
     private HashMap<String, DataModelBase> dataModels;
 
@@ -109,7 +109,7 @@ public class DataWrapper{
         if ((strings.containsKey(key)) && ((strings.get(key) instanceof String))) {
             return strings.get(key);
         }
-        return null;
+        throw new DataException("There is no inserted String in that key.");
     }
 
     /**
@@ -132,7 +132,7 @@ public class DataWrapper{
         if ((dataModels.containsKey(key)) && ((dataModels.get(key) instanceof DataModelBase))) {
             return dataModels.get(key);
         }
-        return null;
+        throw new DataException("There is no inserted DataModel in that key.");
     }
 
     /**
@@ -151,7 +151,52 @@ public class DataWrapper{
         } else if (value instanceof DataModelBase) {
             return this.dataModels.put(key, (DataModelBase) value);
         }
-        return null;
+        throw new DataException("Please insert a valid type.");
+    }
+
+    /**
+     * Creates and returns a deep copy of this DataWrapper.
+     * 
+     * This method performs a deep copy of both the 'strings' and 'dataModels' maps.
+     * For each entry in these maps, a new copy is created and added to the new DataWrapper instance.
+     * 
+     * @return a new DataWrapper instance which is a deep copy of this DataWrapper.
+     */
+    public DataWrapper clone() {
+        DataWrapper newDataWrapper = new DataWrapper();
+        for (String key : this.strings.keySet()) {
+            newDataWrapper.putString(key, strings.get(key));
+        }
+        for (String key : this.dataModels.keySet()) {
+            newDataWrapper.putDataModel(key, dataModels.get(key).clone());
+        }
+        return newDataWrapper;
+    }
+
+    /**
+     * Clears all the data from this DataWrapper.
+     * 
+     * This method removes all entries from both the 'strings' and 'dataModels' maps in this DataWrapper.
+     * After invoking this method, both maps will be empty.
+     * 
+     * @return this DataWrapper instance, cleared of all data, to allow for method chaining.
+     */
+    public DataWrapper clear() {
+        this.strings.clear();
+        this.dataModels.clear();
+        return this;
+    }
+
+    /**
+     * Checks if the specified key is present in either of the maps (strings or dataModels) within this DataWrapper.
+     * 
+     * @param key the key whose presence in this DataWrapper is to be tested.
+     * @return {@code true} if this DataWrapper contains a mapping for the specified key in either the strings map or the dataModels map; {@code false} otherwise.
+     */
+    public boolean containsKey(String key) {
+        if(this.strings.containsKey(key)) return true;
+        if(this.dataModels.containsKey(key)) return true;
+        return false;
     }
 
     @Override
