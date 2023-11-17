@@ -1,4 +1,4 @@
-package io.github.hison0319.data;
+package com.test.boot02.common.data;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -645,6 +645,9 @@ public class DataModelBase implements Cloneable{
      * @throws DataException If the provided object is not recognized as an entity or if there's an error during conversion.
      */
     public DataModelBase(Object entity) {
+        if(entity == null) {
+            throw new DataException("You can not insert null.");
+        }
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
 
@@ -1405,6 +1408,9 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance with the added row.
      */
     public DataModelBase addRow(Object entity){
+        if(entity == null) {
+            throw new DataException("You can not insert null.");
+        }
         HashMap<String, Object> hm = entityTransferHashMap(entity);
         return addRow(hm);
     }
