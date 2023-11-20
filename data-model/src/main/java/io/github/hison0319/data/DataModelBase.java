@@ -76,11 +76,11 @@ public class DataModelBase implements Cloneable{
         Properties properties = new Properties();
         try (InputStream input = DataModelBase.class.getClassLoader().getResourceAsStream("application.properties")) {
             properties.load(input);
-            String converterClassName = properties.getProperty("dataModel.customConverter.class", "com.test.boot02.common.data.DefaultDataModelConverter");
+            String converterClassName = properties.getProperty("dataModel.customConverter.class", "com.test.boot02.common.data.DataModelConverterDefault");
             return (DataModelConverter) Class.forName(converterClassName).newInstance();
         } catch (Exception e) {
             e.printStackTrace();
-            return new DefaultDataModelConverter(); // 기본 컨버터 반환
+            return new DataModelConverterDefault(); // 기본 컨버터 반환
         }
     }
 
