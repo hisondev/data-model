@@ -1,4 +1,4 @@
-package com.test.boot02.common.data;
+package io.github.hison.data;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 /**
  * The {@code DataWrapper} class provides a wrapper structure for structured data communication
  * between the client and the server. This class is designed to handle a combination of simple string
- * key-value pairs and data models (as instances of {@link DataModelBase}) for more complex structured data.
+ * key-value pairs and data models (as instances of {@link DataModel}) for more complex structured data.
  * 
  * <p>Instances of this class can be serialized/deserialized with the help of Jackson annotations.</p>
  * 
@@ -40,7 +40,7 @@ public class DataWrapper implements Cloneable{
     private HashMap<String, Object> data;
 
     private void validateType(Object value) {
-        if (value != null && !(value instanceof String || value instanceof DataModelBase)) {
+        if (value != null && !(value instanceof String || value instanceof DataModel)) {
             throw new DataException("Value type must be a DataModel or String.");
         }
     }
@@ -72,8 +72,8 @@ public class DataWrapper implements Cloneable{
         for (String key : keys) {
             if(this.data.get(key) == null || this.data.get(key) instanceof String) {
                 newData.put(key, this.data.get(key));
-            } else if (this.data.get(key) instanceof DataModelBase) {
-                newData.put(key, ((DataModelBase)this.data.get(key)).clone());
+            } else if (this.data.get(key) instanceof DataModel) {
+                newData.put(key, ((DataModel)this.data.get(key)).clone());
             }
         }
         return newData;
@@ -121,7 +121,7 @@ public class DataWrapper implements Cloneable{
      * @param value the DataModelBase instance to be associated with the specified key.
      * @throws DataException if the provided value is null.
      */
-    public void putDataModel(String key, DataModelBase value) {
+    public void putDataModel(String key, DataModel value) {
         if(value == null) {
             throw new DataException("Please insert a type of DataModel.");    
         }
@@ -137,12 +137,12 @@ public class DataWrapper implements Cloneable{
      * @return A clone of the DataModelBase instance associated with the specified key, or null if the key exists but the value is null.
      * @throws DataException if the key does not exist or if the value is not a DataModelBase instance.
      */
-    public DataModelBase getDataModel(String key) {
+    public DataModel getDataModel(String key) {
         if (data.containsKey(key) && data.get(key) == null) {
             return null;
         }
-        if (data.containsKey(key) && data.get(key) instanceof DataModelBase) {
-            return ((DataModelBase)data.get(key)).clone();
+        if (data.containsKey(key) && data.get(key) instanceof DataModel) {
+            return ((DataModel)data.get(key)).clone();
         }
         throw new DataException("There is no inserted DataModel in that key.");
     }
@@ -168,8 +168,8 @@ public class DataWrapper implements Cloneable{
         } else if (value instanceof String) {
             this.data.put(key, value);
             return;
-        } else if (value instanceof DataModelBase) {
-            this.data.put(key, ((DataModelBase)value).clone());
+        } else if (value instanceof DataModel) {
+            this.data.put(key, ((DataModel)value).clone());
             return;
         }
         throw new DataException("Please insert a valid type.");
@@ -191,8 +191,8 @@ public class DataWrapper implements Cloneable{
             return null;
         } else if (this.data.get(key) instanceof String) {
             return this.data.get(key);
-        } else if (this.data.get(key) instanceof DataModelBase) {
-            return ((DataModelBase)this.data.get(key)).clone();
+        } else if (this.data.get(key) instanceof DataModel) {
+            return ((DataModel)this.data.get(key)).clone();
         }
         return null;
     }
@@ -224,8 +224,8 @@ public class DataWrapper implements Cloneable{
                 newDataWrapper.put(key, null);
             } else if (this.data.get(key) instanceof String) {
                 newDataWrapper.putString(key, (String)this.data.get(key));
-            } else if (this.data.get(key) instanceof DataModelBase) {
-                newDataWrapper.putDataModel(key, ((DataModelBase)this.data.get(key)).clone());
+            } else if (this.data.get(key) instanceof DataModel) {
+                newDataWrapper.putDataModel(key, ((DataModel)this.data.get(key)).clone());
             }
         }
         return newDataWrapper;
@@ -262,8 +262,8 @@ public class DataWrapper implements Cloneable{
         for (String key : keys) {
             if (this.data.get(key) == null || this.data.get(key) instanceof String) {
                 r = r + key + " : " + data.get(key) + "\n";
-            } else if (this.data.get(key) instanceof DataModelBase) {
-                r = r + key + "\n" + ((DataModelBase)data.get(key)).toString() + "\n";
+            } else if (this.data.get(key) instanceof DataModel) {
+                r = r + key + "\n" + ((DataModel)data.get(key)).toString() + "\n";
             }
         }
         return r;
@@ -275,8 +275,8 @@ public class DataWrapper implements Cloneable{
         for (String key : keys) {
             if (this.data.get(key) == null || this.data.get(key) instanceof String) {
                 r = r + key + " : " + data.get(key) + "\n";
-            } else if (this.data.get(key) instanceof DataModelBase) {
-                r = r + key + "\n" + ((DataModelBase)data.get(key)).toString(dataModelSeparator) + "\n";
+            } else if (this.data.get(key) instanceof DataModel) {
+                r = r + key + "\n" + ((DataModel)data.get(key)).toString(dataModelSeparator) + "\n";
             }
         }
         return r;

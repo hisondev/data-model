@@ -1,4 +1,4 @@
-package io.github.hison0319.data;
+package io.github.hison.data;
 
 public abstract class DataModelConverter{
     protected abstract Object convertEntityToDataModel(Object value);

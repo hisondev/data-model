@@ -1,4 +1,4 @@
-package io.github.hison0319.data;
+package io.github.hison.data;
 
 /**
  * The {@code DataException} class represents exceptions specific to data processing

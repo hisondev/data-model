@@ -1,12 +1,12 @@
-package io.github.hison0319.data;
+package io.github.hison.data;
 
 import java.util.HashMap;
 
 /**
- * The {@code Condition} class provides a way to define search conditions for the {@link DataModelBase} methods.
+ * The {@code Condition} class provides a way to define search conditions for the {@link DataModel} methods.
  * This class extends {@link HashMap} and facilitates the encapsulation of search parameters in a key-value format.
  * 
- * <p>This class is primarily used to pass conditions to the search methods within the {@link DataModelBase}. 
+ * <p>This class is primarily used to pass conditions to the search methods within the {@link DataModel}. 
  * It can be thought of as a specialized map tailored for search conditions.</p>
  * 
  * <p>Example usage:

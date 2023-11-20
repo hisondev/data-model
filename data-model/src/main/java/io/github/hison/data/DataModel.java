@@ -1,4 +1,4 @@
-package io.github.hison0319.data;
+package io.github.hison.data;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -65,16 +65,16 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @author Hani son
  * @version 1.0.0
  */
-@JsonDeserialize(using = DataModelBaseDeserializer.class)
-@JsonSerialize(using = DataModelBaseSerializer.class)
-public class DataModelBase implements Cloneable{
+@JsonDeserialize(using = DataModelDeserializer.class)
+@JsonSerialize(using = DataModelSerializer.class)
+public class DataModel implements Cloneable{
     private LinkedHashSet<String> cols;
     private ArrayList<HashMap<String, Object>> rows;
 
     private static DataModelConverter converter = loadConverter();
     private static DataModelConverter loadConverter() {
         Properties properties = new Properties();
-        try (InputStream input = DataModelBase.class.getClassLoader().getResourceAsStream("application.properties")) {
+        try (InputStream input = DataModel.class.getClassLoader().getResourceAsStream("application.properties")) {
             properties.load(input);
             String converterClassName = properties.getProperty("dataModel.customConverter.class", "io.github.hison0319.data.DataModelConverterDefault");
             return (DataModelConverter) Class.forName(converterClassName).newInstance();
@@ -173,7 +173,7 @@ public class DataModelBase implements Cloneable{
      * {@link ArrayList} of {@link HashMap} where each HashMap represents a row with 
      * key-value pairs corresponding to column names and their respective values.</p>
      */
-    public DataModelBase() {
+    public DataModel() {
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
     }
@@ -189,7 +189,7 @@ public class DataModelBase implements Cloneable{
      * @param newColumns A varargs parameter allowing the user to input any number of column 
      *                   names when creating a new instance of DataModelBase.
      */
-    public DataModelBase(String... newColumns) {
+    public DataModel(String... newColumns) {
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
 
@@ -208,7 +208,7 @@ public class DataModelBase implements Cloneable{
      *
      * @param newColumns A set containing the column names to be initialized in the DataModelBase instance.
      */
-    public DataModelBase(Set<String> newColumns) {
+    public DataModel(Set<String> newColumns) {
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
 
@@ -228,7 +228,7 @@ public class DataModelBase implements Cloneable{
      * @param newRow A map representing the initial row with key-value pairs corresponding to 
      *               column names and their respective values.
      */
-    public DataModelBase(Map<String, Object> newRow) {
+    public DataModel(Map<String, Object> newRow) {
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
 
@@ -242,12 +242,12 @@ public class DataModelBase implements Cloneable{
      * as a key-value pair in a new row {@link HashMap}.</p>
      * 
      * <p>This constructor facilitates direct conversion of a {@link Tuple} resulting
-     * from a query into a structured {@link DataModelBase} without necessitating 
+     * from a query into a structured {@link DataModel} without necessitating 
      * manual conversion or entity instantiation.</p>
      * 
      * @param tuple the {@link Tuple} containing the data to initialize the DataModel.
      */
-    public DataModelBase(Tuple tuple) {
+    public DataModel(Tuple tuple) {
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
         
@@ -262,7 +262,7 @@ public class DataModelBase implements Cloneable{
      * from the provided column names array.</p>
      * 
      * <p>This constructor offers a streamlined method to convert query results,
-     * often returned as Object arrays, into a structured {@link DataModelBase}, negating 
+     * often returned as Object arrays, into a structured {@link DataModel}, negating 
      * the need for manual conversion or entity creation.</p>
      * 
      * <p><b>Notice:</b> The length of the <code>columnNames</code> array should match the number 
@@ -272,7 +272,7 @@ public class DataModelBase implements Cloneable{
      * @param data the Object array containing the data to initialize the DataModel.
      * @param columnNames the array of column names corresponding to the data elements.
      */
-    public DataModelBase(Object[] queryResult, String[] columnNames) {
+    public DataModel(Object[] queryResult, String[] columnNames) {
         this.cols = new LinkedHashSet<>(Arrays.asList(columnNames));
         this.rows = new ArrayList<HashMap<String, Object>>();
         
@@ -280,7 +280,7 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
-     * Constructs a new instance of {@link DataModelBase} using the provided HttpSession.
+     * Constructs a new instance of {@link DataModel} using the provided HttpSession.
      * 
      * <p>The constructor extracts attribute names and values from the HttpSession and populates
      * the DataModel accordingly. Attribute names are used as column identifiers, while attribute
@@ -293,7 +293,7 @@ public class DataModelBase implements Cloneable{
      * 
      * @param session the HttpSession from which to extract attribute names and values.
      */
-    public DataModelBase(HttpSession session) {
+    public DataModel(HttpSession session) {
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
 
@@ -301,7 +301,7 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
-     * Constructs a new instance of {@link DataModelBase} using the provided {@link ResultSet}.
+     * Constructs a new instance of {@link DataModel} using the provided {@link ResultSet}.
      *
      * <p>This constructor fetches the column names from the ResultSet's metadata
      * and iterates through the ResultSet to fetch the rows and populate the DataModel.</p>
@@ -313,7 +313,7 @@ public class DataModelBase implements Cloneable{
      * @throws SQLException if a database access error occurs or this method is 
      *                      called on a closed result set.
      */
-    public DataModelBase(ResultSet rs){
+    public DataModel(ResultSet rs){
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
 
@@ -331,7 +331,7 @@ public class DataModelBase implements Cloneable{
      * @param node A {@link JsonNode} representing the initial row with key-value pairs corresponding to 
      *             column names and their respective values.
      */
-    public DataModelBase (JsonNode node) {
+    public DataModel (JsonNode node) {
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
         
@@ -356,7 +356,7 @@ public class DataModelBase implements Cloneable{
      * @param entity An entity object that is converted into a row in the DataModelBase.
      * @throws DataException If the provided object is not recognized as an entity or if there's an error during conversion.
      */
-    public DataModelBase(Object entity) {
+    public DataModel(Object entity) {
         if(entity == null) {
             throw new DataException("You can not insert null.");
         }
@@ -389,7 +389,7 @@ public class DataModelBase implements Cloneable{
      * @param newRows a list of <code>T</code> type instances for the initialization.
      */
     @SuppressWarnings("unchecked")
-    public <T> DataModelBase(List<T> newRows) {
+    public <T> DataModel(List<T> newRows) {
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
 
@@ -440,7 +440,7 @@ public class DataModelBase implements Cloneable{
      * @param queryResults   a list of object arrays, each representing a row from a query result.
      * @param columnNames    an array of strings, representing the column names/keys for the rows.
      */
-    public DataModelBase(List<Object[]> queryResults, String[] columnNames) {
+    public DataModel(List<Object[]> queryResults, String[] columnNames) {
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
     
@@ -527,7 +527,7 @@ public class DataModelBase implements Cloneable{
      *
      * @return the <code>DataModelBase</code> instance with cleared columns and rows.
      */
-    public DataModelBase clear() {
+    public DataModel clear() {
         cols.clear();
         rows.clear();
 
@@ -551,8 +551,8 @@ public class DataModelBase implements Cloneable{
      * 
      * @return a new <code>DataModelBase</code> instance that's a deep copy of the current instance.
      */
-    public DataModelBase clone() {
-        DataModelBase newModel = new DataModelBase(this.cols);
+    public DataModel clone() {
+        DataModel newModel = new DataModel(this.cols);
     
         LinkedHashSet<String> newCol = new LinkedHashSet<>(this.cols);
         newModel.cols = newCol;
@@ -582,7 +582,7 @@ public class DataModelBase implements Cloneable{
      * @param dataModelBase the <code>DataModelBase</code> instance from which rows will be extracted and added to the current instance.
      * @return the <code>DataModelBase</code> instance (i.e., the current instance) after inserting the new rows.
      */
-    public DataModelBase insert(DataModelBase dataModelBase){
+    public DataModel insert(DataModel dataModelBase){
         List<HashMap<String, Object>> newRows = dataModelBase.getRows();
         return addRows(newRows);
     }
@@ -689,7 +689,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance with the columns set.
      * @throws DataException If columns have already been defined for this instance.
      */
-    public DataModelBase setColumns(String... columns) {
+    public DataModel setColumns(String... columns) {
         if(isDefine()) {
             throw new DataException("The column has already been defined.");
         }
@@ -714,7 +714,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance with the columns set.
      * @throws DataException If columns have already been defined for this instance.
      */
-    public DataModelBase setColumns(Set<String> columns) {
+    public DataModel setColumns(Set<String> columns) {
         if(isDefine()) {
             throw new DataException("The column has already been defined.");
         }
@@ -739,7 +739,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance with the columns set.
      * @throws DataException If columns have already been defined for this instance.
      */
-    public DataModelBase setColumns(List<String> columns) {
+    public DataModel setColumns(List<String> columns) {
         if(isDefine()) {
             throw new DataException("The column has already been defined.");
         }
@@ -774,7 +774,7 @@ public class DataModelBase implements Cloneable{
      * @param value The value to be set across all rows for the specified column.
      * @return The current DataModelBase instance with updated values for the specified column.
      */
-    public DataModelBase setColumnSameValue(String column, Object value) {
+    public DataModel setColumnSameValue(String column, Object value) {
         if(!hasColumn(column)) return this;
 
         for (HashMap<String, Object> map : rows) {
@@ -817,7 +817,7 @@ public class DataModelBase implements Cloneable{
      * @param formatter The function to format values within the specified column.
      * @return The current DataModelBase instance with formatted values for the specified column.
      */
-    public DataModelBase setColumnSameFormat(String column, Function<Object, Object> formatter) {
+    public DataModel setColumnSameFormat(String column, Function<Object, Object> formatter) {
         if (!cols.contains(column)) {
             System.out.println("Column does not exist: " + column);
             return this;
@@ -854,7 +854,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance with the added row.
      * @throws DataException If there's a type mismatch between the new data and existing data in a column.
      */
-    public DataModelBase addRow(Map<String, Object> newRow){
+    public DataModel addRow(Map<String, Object> newRow){
         if (cols.isEmpty()) {
             cols.addAll(newRow.keySet());
         }
@@ -920,7 +920,7 @@ public class DataModelBase implements Cloneable{
      * }
      * </pre>
      */
-    public DataModelBase addRow(Tuple tuple) {
+    public DataModel addRow(Tuple tuple) {
         if (tuple != null) {
             HashMap<String, Object> row = new HashMap<>();
             for (TupleElement<?> element : tuple.getElements()) {
@@ -964,7 +964,7 @@ public class DataModelBase implements Cloneable{
      * }
      * </pre>
      */
-    public DataModelBase addRow(Object[] queryResult, String[] columnNames) {
+    public DataModel addRow(Object[] queryResult, String[] columnNames) {
         if (queryResult != null && columnNames != null && queryResult.length == columnNames.length) {
             HashMap<String, Object> row = new HashMap<>();
             for (int i = 0; i < columnNames.length; i++) {
@@ -999,7 +999,7 @@ public class DataModelBase implements Cloneable{
      * }
      * </pre>
      */
-    public DataModelBase addRow(HttpSession session) {
+    public DataModel addRow(HttpSession session) {
         Enumeration<String> attributeNames = session.getAttributeNames();
         HashMap<String, Object> row = new HashMap<String, Object>();
 
@@ -1044,7 +1044,7 @@ public class DataModelBase implements Cloneable{
      * }
      * </pre>
      */
-    public DataModelBase addRow(ResultSet rs){
+    public DataModel addRow(ResultSet rs){
         try {
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
@@ -1085,7 +1085,7 @@ public class DataModelBase implements Cloneable{
      * @param node A JsonNode instance, which can be a JSON object or an array.
      * @return The current DataModelBase instance with the added rows.
      */
-    public DataModelBase addRow(JsonNode node) {
+    public DataModel addRow(JsonNode node) {
         if (node.isObject()) {
             addRow(parseJsonObjectToDataModel(node));
         } 
@@ -1119,7 +1119,7 @@ public class DataModelBase implements Cloneable{
      * @param entity An object representing an entity.
      * @return The current DataModelBase instance with the added row.
      */
-    public DataModelBase addRow(Object entity){
+    public DataModel addRow(Object entity){
         if(entity == null) {
             throw new DataException("You can not insert null.");
         }
@@ -1156,7 +1156,7 @@ public class DataModelBase implements Cloneable{
      * @return the <code>DataModel</code> instance with the added rows.
      */
     @SuppressWarnings("unchecked")
-    public <T> DataModelBase addRows(List<T> newRows) {
+    public <T> DataModel addRows(List<T> newRows) {
         if (newRows != null && !newRows.isEmpty() && newRows.get(0) != null) {
             Object first = newRows.get(0);
             
@@ -1207,7 +1207,7 @@ public class DataModelBase implements Cloneable{
      * @param columnNames An array of strings representing the names of the columns for the fetched data.
      * @return The current DataModelBase instance with the added rows.
      */
-    public DataModelBase addRows(List<Object[]> queryResults, String[] columnNames) {
+    public DataModel addRows(List<Object[]> queryResults, String[] columnNames) {
         for(Object[] result : queryResults) {
             addRow(result, columnNames);
         }
@@ -1389,9 +1389,9 @@ public class DataModelBase implements Cloneable{
      * @return The row at the specified index wrapped in a new {@code DataModelBase} instance.
      * @throws IndexOutOfBoundsException If the rowIndex is out of bounds of the rows.
      */
-    public DataModelBase getRowAsDataModel(int rowIndex) {
+    public DataModel getRowAsDataModel(int rowIndex) {
         checkRowsRange(rowIndex);
-        DataModelBase dm = new DataModelBase(this.cols);
+        DataModel dm = new DataModel(this.cols);
         dm.addRow(getRow(rowIndex));
         return dm;
     }
@@ -1467,7 +1467,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance with the updated value.
      * @throws DataException if the column does not exist, the rows are empty, the row index is out of range, or if there's a type mismatch with the provided value.
      */
-    public DataModelBase setValue(int rowIndex, String column, Object value) {
+    public DataModel setValue(int rowIndex, String column, Object value) {
         checkRowsRange(rowIndex);
         if (!hasColumn(column)) {
             throw new DataException("Column does not exist.");
@@ -1538,7 +1538,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance with the column removed.
      * @throws DataException if the specified column does not exist in the DataModel.
      */
-    public DataModelBase removeColumn(String column) {
+    public DataModel removeColumn(String column) {
         if (!hasColumn(column)) {
             throw new DataException("Column does not exist.");
         }
@@ -1568,7 +1568,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance with the specified columns removed.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
      */
-    public DataModelBase removeColumns(String... columns) {
+    public DataModel removeColumns(String... columns) {
         for (String column : columns) {
             if (!hasColumn(column)) {
                 throw new DataException("Column does not exist.");
@@ -1592,7 +1592,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance with the specified columns removed.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
      */
-    public DataModelBase removeColumns(List<String> columns) {
+    public DataModel removeColumns(List<String> columns) {
         for (String column : columns) {
             if (!hasColumn(column)) {
                 throw new DataException("Column does not exist.");
@@ -1616,7 +1616,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance with the specified columns removed.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
      */
-    public DataModelBase removeColumns(Set<String> columns) {
+    public DataModel removeColumns(Set<String> columns) {
         for (String column : columns) {
             if (!hasColumn(column)) {
                 throw new DataException("Column does not exist.");
@@ -1650,7 +1650,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance retaining only the specified columns.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
      */
-    public DataModelBase setValidColumns(String... columns) {
+    public DataModel setValidColumns(String... columns) {
         Set<String> columnSet = new HashSet<>(Arrays.asList(columns));
         return setValidColumns(columnSet);
     }
@@ -1664,7 +1664,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance retaining only the specified columns.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
      */
-    public DataModelBase setValidColumns(List<String> columns) {
+    public DataModel setValidColumns(List<String> columns) {
         Set<String> columnSet = new HashSet<>(columns);
         return setValidColumns(columnSet);
     }
@@ -1678,7 +1678,7 @@ public class DataModelBase implements Cloneable{
      * @return The current DataModelBase instance retaining only the specified columns.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
      */
-    public DataModelBase setValidColumns(Set<String> columns) {
+    public DataModel setValidColumns(Set<String> columns) {
         for (String column : columns) {
             if (!hasColumn(column)) {
                 throw new DataException("Column " + column + " does not exist.");
@@ -2115,7 +2115,7 @@ public class DataModelBase implements Cloneable{
 
     /**
      * Searches for rows that match all the provided conditions (treated as AND conditions) 
-     * and returns the matched rows encapsulated in a new {@link DataModelBase}.
+     * and returns the matched rows encapsulated in a new {@link DataModel}.
      * 
      * <p><b>Example:</b></p>
      * <pre>
@@ -2134,17 +2134,17 @@ public class DataModelBase implements Cloneable{
      * </ul>
      *
      * @param conditions Varargs of conditions to be used for matching rows.
-     * @return A new {@link DataModelBase} containing rows that match all provided conditions.
+     * @return A new {@link DataModel} containing rows that match all provided conditions.
      * @throws DataException if a column from the conditions does not exist in the DataModel.
      */
-    public DataModelBase searchRowsAsDataModel(Condition... conditions) {
+    public DataModel searchRowsAsDataModel(Condition... conditions) {
         return searchRowsAsDataModel(true, conditions);
     }
 
     /**
      * Searches for rows that match (or do not match, based on the {@code bool} parameter) 
      * all the provided conditions (treated as AND conditions) and returns the matched rows 
-     * encapsulated in a new {@link DataModelBase}.
+     * encapsulated in a new {@link DataModel}.
      * 
      * <p>If {@code bool} is set to {@code true}, the method will return the rows that 
      * match all conditions. If set to {@code false}, the method will return the rows 
@@ -2168,11 +2168,11 @@ public class DataModelBase implements Cloneable{
      *
      * @param bool If {@code true}, return rows that match all conditions. If {@code false}, return rows that do not match any of the conditions.
      * @param conditions Varargs of conditions to be used for matching rows.
-     * @return A new {@link DataModelBase} containing rows based on the conditions and the value of {@code bool}.
+     * @return A new {@link DataModel} containing rows based on the conditions and the value of {@code bool}.
      * @throws DataException if a column from the conditions does not exist in the DataModel.
      */
-    public DataModelBase searchRowsAsDataModel(Boolean bool, Condition... conditions) {
-        DataModelBase matchedDm = new DataModelBase(this.cols);
+    public DataModel searchRowsAsDataModel(Boolean bool, Condition... conditions) {
+        DataModel matchedDm = new DataModel(this.cols);
         HashMap<String, Object> row;
         boolean matchesAll;
 
@@ -2211,7 +2211,7 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
-     * Filters the current {@link DataModelBase} based on the provided conditions (treated as AND conditions), 
+     * Filters the current {@link DataModel} based on the provided conditions (treated as AND conditions), 
      * retaining only the rows that match all conditions. The DataModel is modified in place.
      * 
      * <p><b>Example:</b></p>
@@ -2232,15 +2232,15 @@ public class DataModelBase implements Cloneable{
      * </ul>
      *
      * @param conditions Varargs of conditions to be used for filtering rows.
-     * @return The modified {@link DataModelBase} containing rows that match all provided conditions.
+     * @return The modified {@link DataModel} containing rows that match all provided conditions.
      * @throws DataException if a column from the conditions does not exist in the DataModel.
      */
-    public DataModelBase searchAndModify(Condition... conditions) {
+    public DataModel searchAndModify(Condition... conditions) {
         return searchAndModify(true, conditions);
     }
 
     /**
-     * Filters the current {@link DataModelBase} based on the provided conditions (treated as AND conditions) and the value of {@code bool}, 
+     * Filters the current {@link DataModel} based on the provided conditions (treated as AND conditions) and the value of {@code bool}, 
      * retaining only the rows that match (or do not match, based on the {@code bool} parameter) all conditions. 
      * The DataModel is modified in place.
      * 
@@ -2267,10 +2267,10 @@ public class DataModelBase implements Cloneable{
      *
      * @param bool If {@code true}, retain rows that match all conditions. If {@code false}, retain rows that do not match any of the conditions.
      * @param conditions Varargs of conditions to be used for filtering rows.
-     * @return The modified {@link DataModelBase} containing rows based on the conditions and the value of {@code bool}.
+     * @return The modified {@link DataModel} containing rows based on the conditions and the value of {@code bool}.
      * @throws DataException if a column from the conditions does not exist in the DataModel.
      */
-    public DataModelBase searchAndModify(Boolean bool, Condition... conditions) {
+    public DataModel searchAndModify(Boolean bool, Condition... conditions) {
         List<HashMap<String, Object>> matchedRows = new ArrayList<>();
         HashMap<String, Object> row;
         boolean matchesAll;
@@ -2361,8 +2361,8 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
-     * Filters the current {@link DataModelBase} based on the provided filter predicate and 
-     * returns a new {@link DataModelBase} containing only the rows that satisfy the filter.
+     * Filters the current {@link DataModel} based on the provided filter predicate and 
+     * returns a new {@link DataModel} containing only the rows that satisfy the filter.
      * 
      * <p><b>Example:</b></p>
      * <pre>
@@ -2376,10 +2376,10 @@ public class DataModelBase implements Cloneable{
      * </pre>
      *
      * @param filter The filter predicate to test each row.
-     * @return A new {@link DataModelBase} containing rows that match the filter condition.
+     * @return A new {@link DataModel} containing rows that match the filter condition.
      */
-    public DataModelBase filterRowsAsDataModel(Predicate<HashMap<String, Object>> filter) {
-        DataModelBase matchedDm = new DataModelBase(this.cols);
+    public DataModel filterRowsAsDataModel(Predicate<HashMap<String, Object>> filter) {
+        DataModel matchedDm = new DataModel(this.cols);
         for (HashMap<String, Object> row : rows) {
             if (filter.test(row)) {
                 matchedDm.addRow(new HashMap<String, Object>(row));
@@ -2389,7 +2389,7 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
-     * Filters the current {@link DataModelBase} based on the provided filter predicate. 
+     * Filters the current {@link DataModel} based on the provided filter predicate. 
      * Only rows that satisfy the filter condition are retained. The DataModel is modified in place.
      * 
      * <p><b>Example:</b></p>
@@ -2401,9 +2401,9 @@ public class DataModelBase implements Cloneable{
      * <p><b>Note:</b> This operation modifies the original DataModel.</p>
      *
      * @param filter The filter predicate to test each row.
-     * @return The modified {@link DataModelBase} containing rows that match the filter condition.
+     * @return The modified {@link DataModel} containing rows that match the filter condition.
      */
-    public DataModelBase filterAndModify(Predicate<HashMap<String, Object>> filter) {
+    public DataModel filterAndModify(Predicate<HashMap<String, Object>> filter) {
         ArrayList<HashMap<String, Object>> matchedRows = new ArrayList<>();
         for (HashMap<String, Object> row : rows) {
             if (filter.test(row)) {
@@ -2416,7 +2416,7 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
-     * Sorts the columns in ascending order. The order of columns in the {@link DataModelBase} 
+     * Sorts the columns in ascending order. The order of columns in the {@link DataModel} 
      * is updated to reflect the sorted order.
      *
      * <p><b>Example:</b></p>
@@ -2426,9 +2426,9 @@ public class DataModelBase implements Cloneable{
      *
      * <p><b>Note:</b> This operation modifies the original DataModel's column order.</p>
      *
-     * @return The modified {@link DataModelBase} with columns sorted in ascending order.
+     * @return The modified {@link DataModel} with columns sorted in ascending order.
      */
-    public DataModelBase sortColumnAscending() {
+    public DataModel sortColumnAscending() {
         List<String> list = new ArrayList<>(cols);
         Collections.sort(list);
         cols.clear();
@@ -2437,7 +2437,7 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
-     * Sorts the columns in descending order. The order of columns in the {@link DataModelBase} 
+     * Sorts the columns in descending order. The order of columns in the {@link DataModel} 
      * is updated to reflect the sorted order.
      *
      * <p><b>Example:</b></p>
@@ -2447,9 +2447,9 @@ public class DataModelBase implements Cloneable{
      *
      * <p><b>Note:</b> This operation modifies the original DataModel's column order.</p>
      *
-     * @return The modified {@link DataModelBase} with columns sorted in descending order.
+     * @return The modified {@link DataModel} with columns sorted in descending order.
      */
-    public DataModelBase sortColumnDescending() {
+    public DataModel sortColumnDescending() {
         List<String> list = new ArrayList<>(cols);
         Collections.sort(list, Collections.reverseOrder());
         cols.clear();
@@ -2458,7 +2458,7 @@ public class DataModelBase implements Cloneable{
     }
 
     /**
-     * Reverses the order of columns in the {@link DataModelBase}. If the original column order 
+     * Reverses the order of columns in the {@link DataModel}. If the original column order 
      * was [A, B, C], after this operation it will be [C, B, A].
      *
      * <p><b>Example:</b></p>
@@ -2468,9 +2468,9 @@ public class DataModelBase implements Cloneable{
      *
      * <p><b>Note:</b> This operation modifies the original DataModel's column order.</p>
      *
-     * @return The modified {@link DataModelBase} with columns in reversed order.
+     * @return The modified {@link DataModel} with columns in reversed order.
      */
-    public DataModelBase sortColumnReverse() {
+    public DataModel sortColumnReverse() {
         List<String> list = new ArrayList<>(cols);
         Collections.reverse(list);
         cols.clear();
@@ -2489,10 +2489,10 @@ public class DataModelBase implements Cloneable{
      * <p><b>Note:</b> This operation modifies the original DataModel's row order.</p>
      *
      * @param column The column name based on which the rows will be sorted.
-     * @return The modified {@link DataModelBase} with rows sorted in ascending order based on the specified column.
+     * @return The modified {@link DataModel} with rows sorted in ascending order based on the specified column.
      * @throws DataException If the specified column does not exist.
      */
-    public DataModelBase sortRowAscending(String column) {
+    public DataModel sortRowAscending(String column) {
         return sortRowAscending(column, false);
     }
 
@@ -2513,10 +2513,10 @@ public class DataModelBase implements Cloneable{
      *
      * @param column The column name based on which the rows will be sorted.
      * @param isIntegerOrder If true, attempts to treat string values as numbers for sorting.
-     * @return The modified {@link DataModelBase} with rows sorted in ascending order based on the specified column.
+     * @return The modified {@link DataModel} with rows sorted in ascending order based on the specified column.
      * @throws DataException If the specified column does not exist, or if mixed or unsupported types are encountered.
      */
-    public DataModelBase sortRowAscending(String column, Boolean isIntegerOrder) {
+    public DataModel sortRowAscending(String column, Boolean isIntegerOrder) {
         if (!hasColumn(column)) {
             throw new DataException("Column " + column + " does not exist.");
         }
@@ -2572,10 +2572,10 @@ public class DataModelBase implements Cloneable{
      * <p><b>Note:</b> This operation modifies the original DataModel's row order.</p>
      *
      * @param column The column name based on which the rows will be sorted.
-     * @return The modified {@link DataModelBase} with rows sorted in descending order based on the specified column.
+     * @return The modified {@link DataModel} with rows sorted in descending order based on the specified column.
      * @throws DataException If the specified column does not exist.
      */
-    public DataModelBase sortRowDescending(String column) {
+    public DataModel sortRowDescending(String column) {
         return sortRowDescending(column, false);
     }
 
@@ -2596,10 +2596,10 @@ public class DataModelBase implements Cloneable{
      *
      * @param column The column name based on which the rows will be sorted.
      * @param isIntegerOrder If true, attempts to treat string values as numbers for sorting.
-     * @return The modified {@link DataModelBase} with rows sorted in descending order based on the specified column.
+     * @return The modified {@link DataModel} with rows sorted in descending order based on the specified column.
      * @throws DataException If the specified column does not exist, or if mixed or unsupported types are encountered.
      */
-    public DataModelBase sortRowDescending(String column, Boolean isIntegerOrder) {
+    public DataModel sortRowDescending(String column, Boolean isIntegerOrder) {
         if (!hasColumn(column)) {
             throw new DataException("Column " + column + " does not exist.");
         }
@@ -2654,9 +2654,9 @@ public class DataModelBase implements Cloneable{
      *
      * <p><b>Note:</b> This operation modifies the original DataModel's row order.</p>
      *
-     * @return The modified {@link DataModelBase} with its rows in reverse order.
+     * @return The modified {@link DataModel} with its rows in reverse order.
      */
-    public DataModelBase sortRowReverse() {
+    public DataModel sortRowReverse() {
         Collections.reverse(rows);
         return this;
     }

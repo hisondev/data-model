@@ -1,4 +1,4 @@
-package io.github.hison0319.data;
+package io.github.hison.data;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,12 +8,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
 
-public class DataModelBaseDeserializer extends JsonDeserializer<DataModelBase> {
+public class DataModelDeserializer extends JsonDeserializer<DataModel> {
 
     @Override
-    public DataModelBase deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public DataModel deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
         JsonNode node = jp.getCodec().readTree(jp);
-        DataModelBase dataModelBase = new DataModelBase(node);
+        DataModel dataModelBase = new DataModel(node);
         
         return dataModelBase;
     }

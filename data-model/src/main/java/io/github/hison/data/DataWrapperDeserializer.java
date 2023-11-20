@@ -1,4 +1,4 @@
-package io.github.hison0319.data;
+package io.github.hison.data;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,7 +25,7 @@ public class DataWrapperDeserializer extends JsonDeserializer<DataWrapper> {
             JsonNode valueNode = field.getValue();
 
             if (valueNode.isObject() || valueNode.isArray()) {
-                DataModelBase dataModel = new DataModelBase(valueNode);
+                DataModel dataModel = new DataModel(valueNode);
                 dataWrapper.putDataModel(key, dataModel);
             } else if (valueNode.isNull() || valueNode instanceof NullNode) {
                 dataWrapper.put(key, null);

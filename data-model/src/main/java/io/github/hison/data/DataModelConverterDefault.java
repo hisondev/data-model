@@ -1,4 +1,4 @@
-package io.github.hison0319.data;
+package io.github.hison.data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
