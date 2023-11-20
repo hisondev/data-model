@@ -1,4 +1,4 @@
-package com.test.boot02.common.data;
+package io.github.hison0319.data;
 
 public abstract class DataModelConverter{
     protected abstract Object convertEntityToDataModel(Object value);
