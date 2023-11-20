@@ -1,6 +1,7 @@
 package com.test.boot02.common.data;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -58,6 +59,13 @@ public class DataWrapper implements Cloneable{
         this.data.put(key, value);
     }
 
+    /**
+     * Returns a copy of the data stored in this DataWrapper as a new HashMap.
+     * The method performs a shallow copy for String values and a deep copy for DataModelBase instances.
+     * This ensures any changes to the returned HashMap do not affect the original data.
+     *
+     * @return A new HashMap containing the copied data, with deep copies of DataModelBase instances.
+     */
     public HashMap<String, Object> getDatas() {
         HashMap<String, Object> newData = new HashMap<String, Object>();
         Set<String> keys = this.data.keySet();
@@ -70,17 +78,31 @@ public class DataWrapper implements Cloneable{
         }
         return newData;
     }
-    
+
     /**
-     * Associates the specified value with the specified key in the string map.
-     * 
+     * Associates the specified String value with the specified key in this DataWrapper.
+     * If the value is null, a DataException is thrown, emphasizing that only non-null String values are acceptable.
+     *
      * @param key   the key with which the specified value is to be associated.
-     * @param value value to be associated with the specified key.
+     * @param value the String value to be associated with the specified key.
+     * @throws DataException if the provided value is null.
      */
     public void putString(String key, String value) {
+        if(value == null) {
+            throw new DataException("Please insert a type of String.");    
+        }
         data.put(key, value);
     }
 
+    /**
+     * Retrieves the String value associated with the specified key from this DataWrapper.
+     * If the key exists but the value is null, it returns null. If the key exists and the value is a String, it returns the String value.
+     * If the key does not exist or the value is not a String, a DataException is thrown.
+     *
+     * @param key the key whose associated String value is to be returned.
+     * @return The String value associated with the specified key, or null if the key exists but the value is null.
+     * @throws DataException if the key does not exist or if the value is not a String.
+     */
     public String getString(String key) {
         if (data.containsKey(key) && data.get(key) == null) {
             return null;
@@ -92,15 +114,29 @@ public class DataWrapper implements Cloneable{
     }
 
     /**
-     * Associates the specified value with the specified key in the data model map.
-     * 
-     * @param key   the key with which the specified value is to be associated.
-     * @param value value to be associated with the specified key. It must be an instance of {@link DataModelBase}.
+     * Associates the specified DataModelBase instance with the specified key in this DataWrapper.
+     * If the value is null, a DataException is thrown, indicating that only non-null DataModelBase instances are accepted.
+     *
+     * @param key   the key with which the specified DataModelBase instance is to be associated.
+     * @param value the DataModelBase instance to be associated with the specified key.
+     * @throws DataException if the provided value is null.
      */
     public void putDataModel(String key, DataModelBase value) {
+        if(value == null) {
+            throw new DataException("Please insert a type of DataModel.");    
+        }
         data.put(key, value);
     }
 
+    /**
+     * Retrieves the DataModelBase instance associated with the specified key from this DataWrapper.
+     * If the key exists but the value is null, it returns null. If the key exists and the value is a DataModelBase instance, it returns a clone of the DataModelBase instance.
+     * If the key does not exist or the value is not a DataModelBase instance, a DataException is thrown.
+     *
+     * @param key the key whose associated DataModelBase instance is to be returned.
+     * @return A clone of the DataModelBase instance associated with the specified key, or null if the key exists but the value is null.
+     * @throws DataException if the key does not exist or if the value is not a DataModelBase instance.
+     */
     public DataModelBase getDataModel(String key) {
         if (data.containsKey(key) && data.get(key) == null) {
             return null;
@@ -111,9 +147,21 @@ public class DataWrapper implements Cloneable{
         throw new DataException("There is no inserted DataModel in that key.");
     }
 
+    /**
+     * Associates the specified key with the given value in this DataWrapper.
+     * The value must be either a String, a DataModelBase instance, or null. 
+     * The method validates the type of the value and performs the following:
+     * - If the value is null, associates the key with a null value.
+     * - If the value is a String or DataModelBase instance, associates the key with the value.
+     * - If the value is a DataModelBase instance, a clone of the instance is stored.
+     * If the value is of an invalid type, a DataException is thrown.
+     *
+     * @param key   the key with which the specified value is to be associated.
+     * @param value the value to be associated with the specified key, can be a String, DataModelBase instance, or null.
+     * @throws DataException if the value is of an invalid type.
+     */
     public void put(String key, Object value) {
         validateType(value);
-        
         if (value == null) {
             this.data.put(key, null);
             return;
@@ -125,6 +173,39 @@ public class DataWrapper implements Cloneable{
             return;
         }
         throw new DataException("Please insert a valid type.");
+    }
+
+    /**
+     * Retrieves the value associated with the specified key from this DataWrapper.
+     * This method returns:
+     * - null if the key exists but its associated value is null.
+     * - the value itself if it is a String.
+     * - a clone of the value if it is an instance of DataModelBase.
+     * If the key does not exist or is associated with a value of an unrecognized type, null is returned.
+     *
+     * @param key the key whose associated value is to be returned.
+     * @return The value associated with the specified key, which could be null, a String, or a cloned instance of DataModelBase.
+     */
+    public Object get(String key) {
+        if (this.data.get(key) == null) {
+            return null;
+        } else if (this.data.get(key) instanceof String) {
+            return this.data.get(key);
+        } else if (this.data.get(key) instanceof DataModelBase) {
+            return ((DataModelBase)this.data.get(key)).clone();
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves a copy of the set of keys from the data stored in this DataWrapper.
+     * This method creates and returns a new HashSet containing all the keys present in the internal HashMap.
+     * This ensures that modifications to the returned set do not affect the original data stored in the DataWrapper.
+     *
+     * @return A new HashSet containing the keys from the DataWrapper's internal HashMap.
+     */
+    public Set<String> getKeys() {
+        return new HashSet<>(this.data.keySet());
     }
 
     /**
