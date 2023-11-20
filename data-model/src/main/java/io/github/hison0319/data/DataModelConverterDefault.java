@@ -10,7 +10,7 @@ import java.util.List;
 
 import javax.persistence.Entity;
 
-public class DefaultDataModelConverter extends DataModelConverter{
+public class DataModelConverterDefault extends DataModelConverter{
     /**
      * Converts provided values to a consistent format that can be stored in the DataModelBase.
      * 
