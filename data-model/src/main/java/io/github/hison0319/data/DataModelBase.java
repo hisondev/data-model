@@ -76,7 +76,7 @@ public class DataModelBase implements Cloneable{
         Properties properties = new Properties();
         try (InputStream input = DataModelBase.class.getClassLoader().getResourceAsStream("application.properties")) {
             properties.load(input);
-            String converterClassName = properties.getProperty("dataModel.customConverter.class", "com.test.boot02.common.data.DataModelConverterDefault");
+            String converterClassName = properties.getProperty("dataModel.customConverter.class", "io.github.hison0319.data.DataModelConverterDefault");
             return (DataModelConverter) Class.forName(converterClassName).newInstance();
         } catch (Exception e) {
             e.printStackTrace();
