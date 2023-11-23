@@ -1,6 +1,6 @@
-package com.example.demo.common.data.wrapper;
+package io.github.hison.data.model.wrapper;
 
-package io.github.hison.data.model.DataModel;
+import com.example.demo.common.data.model.DataModel;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
