@@ -10,7 +10,7 @@ import java.util.List;
 
 import javax.persistence.Entity;
 
-public class DataModelConverterDefault extends DataModelConverter{
+public class DataConverterDefault implements DataConverter{
     /**
      * Converts provided values to a consistent format that can be stored in the DataModelBase.
      * 
@@ -33,7 +33,7 @@ public class DataModelConverterDefault extends DataModelConverter{
      * @return The converted value that's suitable for storage in the DataModelBase.
      */
     @Override
-    protected Object convertEntityToDataModel(Object value) {
+    public Object convertEntityToDataModel(Object value) {
         if (value == null) {
             return null;
         }
@@ -77,7 +77,7 @@ public class DataModelConverterDefault extends DataModelConverter{
      * @throws DataException if no valid conversion can be performed.
      */
     @Override
-    protected Object convertDataModelToEntity(Object value, Class<?> targetType){
+    public Object convertDataModelToEntity(Object value, Class<?> targetType){
         if (value == null) {
             return convertDataModelToEntityValueIsNull(value, targetType);
         }
@@ -118,7 +118,7 @@ public class DataModelConverterDefault extends DataModelConverter{
      * @return The converted value (usually null).
      */
     @Override
-    protected Object convertDataModelToEntityValueIsNull(Object value, Class<?> targetType) {
+    public Object convertDataModelToEntityValueIsNull(Object value, Class<?> targetType) {
         return null;
     }
 
@@ -134,7 +134,7 @@ public class DataModelConverterDefault extends DataModelConverter{
      * @throws DataException if the conversion is not supported.
      */
     @Override
-    protected Object convertDataModelToEntityValueIsNumber(Object value, Class<?> targetType) {
+    public Object convertDataModelToEntityValueIsNumber(Object value, Class<?> targetType) {
         Number numberValue = (Number) value;
         // Integer types
         if (targetType == int.class || targetType == Integer.class) {
@@ -184,7 +184,7 @@ public class DataModelConverterDefault extends DataModelConverter{
      * @return The converted value.
      */
     @Override
-    protected Object convertDataModelToEntityValueIsBoolean(Object value, Class<?> targetType) {
+    public Object convertDataModelToEntityValueIsBoolean(Object value, Class<?> targetType) {
         return value;
     }
 
@@ -200,7 +200,7 @@ public class DataModelConverterDefault extends DataModelConverter{
      * @throws DataException if the conversion is not supported.
      */
     @Override
-    protected Object convertDataModelToEntityValueIsString(Object value, Class<?> targetType) {
+    public Object convertDataModelToEntityValueIsString(Object value, Class<?> targetType) {
         String stringValue = (String) value;
         // From String to LocalDateTime
         if (targetType == LocalDateTime.class) {
@@ -288,7 +288,7 @@ public class DataModelConverterDefault extends DataModelConverter{
      * @return {@code true} if the object is an instance of a class annotated with {@code @Entity}, {@code false} otherwise.
      */
     @Override
-    protected boolean isEntity(Object obj) {
+    public boolean isEntity(Object obj) {
         return obj != null && obj.getClass().isAnnotationPresent(Entity.class);
     }
 
@@ -302,7 +302,7 @@ public class DataModelConverterDefault extends DataModelConverter{
      * @return The date format pattern string for converting {@link LocalDateTime} to string representation in the data model. Default is "yyyy-MM-dd HH:mm:ss".
      */
     @Override
-    protected String getDateFormatEntityToDataModel() {
+    public String getDateFormatEntityToDataModel() {
         return "yyyy-MM-dd HH:mm:ss";
     }
 
@@ -316,7 +316,7 @@ public class DataModelConverterDefault extends DataModelConverter{
      * @return An array of date format pattern strings for attempting conversion of string values to {@link LocalDateTime}. 
      */
     @Override
-    protected String[] getDateFormatsDataModelToEntity() {
+    public String[] getDateFormatsDataModelToEntity() {
         String[] dateFormats = {
                     "yyyy-MM-dd HH:mm:ss",
                     "yyyy-MM-dd",
