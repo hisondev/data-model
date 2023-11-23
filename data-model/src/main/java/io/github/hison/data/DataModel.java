@@ -2,7 +2,6 @@ package io.github.hison.data;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,7 +18,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -70,18 +68,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class DataModel implements Cloneable{
     private LinkedHashSet<String> cols;
     private ArrayList<HashMap<String, Object>> rows;
-
-    private static DataModelConverter converter = loadConverter();
-    private static DataModelConverter loadConverter() {
-        Properties properties = new Properties();
-        try (InputStream input = DataModel.class.getClassLoader().getResourceAsStream("application.properties")) {
-            properties.load(input);
-            String converterClassName = properties.getProperty("dataModel.customConverter.class", "io.github.hison.data.DataModelConverterDefault");
-            return (DataModelConverter) Class.forName(converterClassName).getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new DataModelConverterDefault(); // 기본 컨버터 반환
-        }
+    
+    private DataConverter getConverter() {
+        return DataConverterProvider.getConverter();
     }
 
     private HashMap<String, Object> parseJsonObjectToDataModel(JsonNode node) {
@@ -154,15 +143,15 @@ public class DataModel implements Cloneable{
     }
 
     private Object convertEntityToDataModel(Object value) {
-        return converter.convertEntityToDataModel(value);
+        return getConverter().convertEntityToDataModel(value);
     }
 
     private Object convertDataModelToEntity(Object value, Class<?> targetType){
-        return converter.convertDataModelToEntity(value, targetType);
+        return getConverter().convertDataModelToEntity(value, targetType);
     }
 
     private boolean isEntity(Object obj) {
-        return converter.isEntity(obj);
+        return getConverter().isEntity(obj);
     }
 
     /**
