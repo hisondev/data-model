@@ -10,7 +10,7 @@ import java.util.List;
 
 import javax.persistence.Entity;
 
-import com.example.demo.common.data.exception.DataException;
+import io.github.hison.data.exception.DataException;
 
 public class DataConverterDefault implements DataConverter{
     /**

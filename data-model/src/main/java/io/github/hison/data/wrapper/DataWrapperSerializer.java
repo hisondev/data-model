@@ -1,9 +1,10 @@
 package io.github.hison.data.wrapper;
 
-import com.example.demo.common.data.model.DataModel;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+
+import io.github.hison.data.model.DataModel;
 
 import java.io.IOException;
 import java.util.HashMap;
