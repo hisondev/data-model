@@ -1,6 +1,7 @@
 package io.github.hison.data.condition;
 
 import java.util.HashMap;
+
 /**
  * The {@code Condition} class provides a way to define search conditions for the {@link DataModel} methods.
  * This class extends {@link HashMap} and facilitates the encapsulation of search parameters in a key-value format.
@@ -11,7 +12,7 @@ import java.util.HashMap;
  * <p>Example usage:
  * <pre>
  *     Condition condition = new Condition("username", "JohnDoe");
- *     DataModelBase.search(condition);
+ *     dataModel.search(condition);
  * </pre>
  * </p>
  * 

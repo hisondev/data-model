@@ -9,7 +9,7 @@ import java.io.IOException;
 public class DataModelSerializer extends JsonSerializer<DataModel> {
 
     @Override
-    public void serialize(DataModel dataModelBase, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeTree(dataModelBase.getConvertJson());
+    public void serialize(DataModel dataModel, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        gen.writeTree(dataModel.getConvertedJson());
     }
 }

@@ -1,21 +1,27 @@
 package io.github.hison.data.converter;
 
+import java.util.List;
+
+import io.github.hison.data.model.DataModel;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public interface DataConverter{
-    Object convertEntityToDataModel(Object value);
-
-    Object convertDataModelToEntity(Object value, Class<?> targetType);
-
-    Object convertDataModelToEntityValueIsNull(Object value, Class<?> targetType);
-
-    Object convertDataModelToEntityValueIsNumber(Object value, Class<?> targetType);
-    
-    Object convertDataModelToEntityValueIsBoolean(Object value, Class<?> targetType);
-    
-    Object convertDataModelToEntityValueIsString(Object value, Class<?> targetType);
-    
     boolean isEntity(Object obj);
+
+    String getConvertJsonValueNodeToDataModelRowValue(JsonNode valueNode);
+
+    JsonNode getConvertedJson(DataModel dm);
+
+    ObjectMapper getObjectMapperForConvertDataModelToJson();
+
+    <T> List<T> getConvertedEntities(Class<T> entityClass, DataModel dm);
+
+    ObjectMapper getObjectMapperForConvertDataModelToEntities();
+
+    ObjectMapper getObjectMapperForConvertEntitiesToDataModel();
+
+    Object getConvertValueToDataModelRowValue(Object value);
     
-    String getDateFormatEntityToDataModel();
-    
-    String[] getDateFormatsDataModelToEntity();
+    String getDateFormat();
 }

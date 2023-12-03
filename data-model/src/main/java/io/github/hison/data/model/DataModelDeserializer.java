@@ -13,8 +13,8 @@ public class DataModelDeserializer extends JsonDeserializer<DataModel> {
     @Override
     public DataModel deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
         JsonNode node = jp.getCodec().readTree(jp);
-        DataModel dataModelBase = new DataModel(node);
+        DataModel dataModel = new DataModel(node);
         
-        return dataModelBase;
+        return dataModel;
     }
 }

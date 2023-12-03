@@ -1,10 +1,9 @@
 package io.github.hison.data.wrapper;
 
+import io.github.hison.data.model.DataModel;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-
-import io.github.hison.data.model.DataModel;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -26,7 +25,7 @@ public class DataWrapperSerializer extends JsonSerializer<DataWrapper> {
                 gen.writeStringField(key, (String)data.get(key));
             } else if (data.get(key) instanceof DataModel) {
                 gen.writeFieldName(key);
-                gen.writeTree(((DataModel)data.get(key)).getConvertJson());
+                gen.writeTree(((DataModel)data.get(key)).getConvertedJson());
             }
         }
 

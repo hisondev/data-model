@@ -4,11 +4,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import io.github.hison.data.exception.DataException;
 import io.github.hison.data.model.DataModel;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * The {@code DataWrapper} class provides a wrapper structure for structured data communication
@@ -30,7 +29,7 @@ import io.github.hison.data.model.DataModel;
  *         ]
  *     }
  *     </pre>
- *     This translates to key1 having the string value "value" and key2 having a {@code DataModelBase} value with {key1 : "value"}.
+ *     This translates to key1 having the string value "value" and key2 having a {@code dataModel} value with {key1 : "value"}.
  *     </li>
  * </ul>
  * 
@@ -64,10 +63,10 @@ public class DataWrapper implements Cloneable{
 
     /**
      * Returns a copy of the data stored in this DataWrapper as a new HashMap.
-     * The method performs a shallow copy for String values and a deep copy for DataModelBase instances.
+     * The method performs a shallow copy for String values and a deep copy for dataModel instances.
      * This ensures any changes to the returned HashMap do not affect the original data.
      *
-     * @return A new HashMap containing the copied data, with deep copies of DataModelBase instances.
+     * @return A new HashMap containing the copied data, with deep copies of dataModel instances.
      */
     public HashMap<String, Object> getDatas() {
         HashMap<String, Object> newData = new HashMap<String, Object>();
@@ -117,11 +116,11 @@ public class DataWrapper implements Cloneable{
     }
 
     /**
-     * Associates the specified DataModelBase instance with the specified key in this DataWrapper.
-     * If the value is null, a DataException is thrown, indicating that only non-null DataModelBase instances are accepted.
+     * Associates the specified dataModel instance with the specified key in this DataWrapper.
+     * If the value is null, a DataException is thrown, indicating that only non-null dataModel instances are accepted.
      *
-     * @param key   the key with which the specified DataModelBase instance is to be associated.
-     * @param value the DataModelBase instance to be associated with the specified key.
+     * @param key   the key with which the specified dataModel instance is to be associated.
+     * @param value the dataModel instance to be associated with the specified key.
      * @throws DataException if the provided value is null.
      */
     public void putDataModel(String key, DataModel value) {
@@ -132,13 +131,13 @@ public class DataWrapper implements Cloneable{
     }
 
     /**
-     * Retrieves the DataModelBase instance associated with the specified key from this DataWrapper.
-     * If the key exists but the value is null, it returns null. If the key exists and the value is a DataModelBase instance, it returns a clone of the DataModelBase instance.
-     * If the key does not exist or the value is not a DataModelBase instance, a DataException is thrown.
+     * Retrieves the dataModel instance associated with the specified key from this DataWrapper.
+     * If the key exists but the value is null, it returns null. If the key exists and the value is a dataModel instance, it returns a clone of the dataModel instance.
+     * If the key does not exist or the value is not a dataModel instance, a DataException is thrown.
      *
-     * @param key the key whose associated DataModelBase instance is to be returned.
-     * @return A clone of the DataModelBase instance associated with the specified key, or null if the key exists but the value is null.
-     * @throws DataException if the key does not exist or if the value is not a DataModelBase instance.
+     * @param key the key whose associated dataModel instance is to be returned.
+     * @return A clone of the dataModel instance associated with the specified key, or null if the key exists but the value is null.
+     * @throws DataException if the key does not exist or if the value is not a dataModel instance.
      */
     public DataModel getDataModel(String key) {
         if (data.containsKey(key) && data.get(key) == null) {
@@ -152,15 +151,15 @@ public class DataWrapper implements Cloneable{
 
     /**
      * Associates the specified key with the given value in this DataWrapper.
-     * The value must be either a String, a DataModelBase instance, or null. 
+     * The value must be either a String, a dataModel instance, or null. 
      * The method validates the type of the value and performs the following:
      * - If the value is null, associates the key with a null value.
-     * - If the value is a String or DataModelBase instance, associates the key with the value.
-     * - If the value is a DataModelBase instance, a clone of the instance is stored.
+     * - If the value is a String or dataModel instance, associates the key with the value.
+     * - If the value is a dataModel instance, a clone of the instance is stored.
      * If the value is of an invalid type, a DataException is thrown.
      *
      * @param key   the key with which the specified value is to be associated.
-     * @param value the value to be associated with the specified key, can be a String, DataModelBase instance, or null.
+     * @param value the value to be associated with the specified key, can be a String, dataModel instance, or null.
      * @throws DataException if the value is of an invalid type.
      */
     public void put(String key, Object value) {
@@ -183,11 +182,11 @@ public class DataWrapper implements Cloneable{
      * This method returns:
      * - null if the key exists but its associated value is null.
      * - the value itself if it is a String.
-     * - a clone of the value if it is an instance of DataModelBase.
+     * - a clone of the value if it is an instance of dataModel.
      * If the key does not exist or is associated with a value of an unrecognized type, null is returned.
      *
      * @param key the key whose associated value is to be returned.
-     * @return The value associated with the specified key, which could be null, a String, or a cloned instance of DataModelBase.
+     * @return The value associated with the specified key, which could be null, a String, or a cloned instance of dataModel.
      */
     public Object get(String key) {
         if (this.data.get(key) == null) {
