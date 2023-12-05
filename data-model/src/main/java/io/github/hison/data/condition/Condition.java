@@ -1,5 +1,6 @@
 package io.github.hison.data.condition;
 
+import io.github.hison.data.model.DataModel;
 import java.util.HashMap;
 
 /**
