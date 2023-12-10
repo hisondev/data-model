@@ -1,8 +1,5 @@
 package io.github.hison.data.converter;
 
-/*
- * DataConverterProvider to inject DataConverter into DataModel
- */
 public class DataConverterProvider {
 
     private static DataConverter getConverterBean() {
