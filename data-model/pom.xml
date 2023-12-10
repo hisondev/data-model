@@ -8,9 +8,32 @@
   <artifactId>data-model</artifactId>
   <version>0.0.1</version>
 
-  <name>data-model</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <name>Data Model</name>
+  <description>A library designed to simplify data communication in Spring applications. Primarily featuring the DataWrapper and DataModel classes to streamline the process of data transfer and management.</description>
+  <url>https://github.com/hisondev/data-model</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+  <developers>
+    <developer>
+      <name>Hani Son</name>
+      <email>hison0319@gmail.com</email>
+      <organization>Sonatype</organization>
+      <organizationUrl>http://www.sonatype.com</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+      <connection>scm:git:git://github.com/hiosndev/data-model.git</connection>
+      <developerConnection>scm:git:ssh://github.com:hisondev/data-model.git</developerConnection>
+      <url>http://github.com/hisondev/data-model</url>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
