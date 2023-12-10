@@ -2,7 +2,6 @@ package io.github.hison.data.model;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -264,7 +263,7 @@ public final class DataModel implements Cloneable{
      * of columns in each object array within the <code>queryResults</code>. If there's a mismatch, 
      * it may lead to out of bounds exceptions or missing data.</p>
      * 
-     * @param data the Object array containing the data to initialize the DataModel.
+     * @param queryResult the Object array containing the data to initialize the DataModel.
      * @param columnNames the array of column names corresponding to the data elements.
      */
     public DataModel(Object[] queryResult, String[] columnNames) {
@@ -305,8 +304,6 @@ public final class DataModel implements Cloneable{
      * (this is the default positioning when a ResultSet is initially created).</p>
      *
      * @param rs the {@link ResultSet} containing the data to populate the DataModel.
-     * @throws SQLException if a database access error occurs or this method is 
-     *                      called on a closed result set.
      */
     public DataModel(ResultSet rs){
         this.cols = new LinkedHashSet<String>();
@@ -378,11 +375,9 @@ public final class DataModel implements Cloneable{
      * <ul>
      *     <li>Initializes the columns (cols) as a {@link LinkedHashSet} and rows as an {@link ArrayList} of {@link HashMap}s.</li>
      *     <li>Checks the type of the first item in the newRows list and applies the appropriate method:</li>
-     *     <ul>
-     *         <li>If the items are Strings, sets them as column names using {@link #setColumns(List)}.</li>
-     *         <li>If the items are Maps or Tuples, adds them as rows using {@link #addRows(List)}.</li>
-     *         <li>If the items are Objects (entities), converts them to rows and adds them using {@link #addRows(List)}.</li>
-     *     </ul>
+     *     <li>If the items are Strings, sets them as column names using {@link #setColumns(List)}.</li>
+     *     <li>If the items are Maps or Tuples, adds them as rows using {@link #addRows(List)}.</li>
+     *     <li>If the items are Objects (entities), converts them to rows and adds them using {@link #addRows(List)}.</li>
      * </ul>
      *
      * <p>This constructor offers a versatile way to initialize a DataModel with different types of data, making it suitable 
@@ -805,7 +800,7 @@ public final class DataModel implements Cloneable{
      * <p><b>Example:</b></p>
      * <pre>
      * DataModel dataModel = new DataModel();
-     * Map<String, Object> newRow = new HashMap<>();
+     * Map&lt;String, Object&gt; newRow = new HashMap&lt;&gt;();
      * newRow.put("column1", "value1");
      * newRow.put("column2", 123);
      * dataModel.addRow(newRow);
@@ -914,9 +909,8 @@ public final class DataModel implements Cloneable{
      *
      * <p><b>Example:</b></p>
      * <pre>
-     * {@code
      * // Example result from a query
-     * List<Object[]> results = memberRepository.findAllProjectedBy();
+     * List&lt;Object[]&gt; results = memberRepository.findAllProjectedBy();
      * String[] columnNames = new String[]{"name", "age", "profession"};
      * 
      * // Create a new dataModel and add the result as a row
@@ -1066,7 +1060,7 @@ public final class DataModel implements Cloneable{
     /**
      * Adds a new row to the DataModel using an entity object. The entity is first converted to a Map representation,
      * with each field of the entity corresponding to a column in the DataModel. This conversion process utilizes
-     * a customized {@link ObjectMapper} obtained from {@link #getObjectMapperForConvertEntitiesToDataModel()},
+     * a customized {@link ObjectMapper} obtained from {@link DataConverter} getObjectMapperForConvertEntitiesToDataModel(),
      * allowing for user-defined data conversion strategies.
      *
      * <p>Process:</p>
@@ -1114,12 +1108,10 @@ public final class DataModel implements Cloneable{
      * <ul>
      *     <li>Checks if the provided list is not null and not empty.</li>
      *     <li>Determines the type of the first item in the list and applies the appropriate conversion logic for each type:</li>
-     *     <ul>
-     *         <li>If the items are Maps, each map is added as a new row.</li>
-     *         <li>If the items are Tuples, each tuple is converted to a Map and then added as a new row.</li>
-     *         <li>If the items are entities, they are first converted to Maps using {@link #getConvertedEntitiesToMaps(List)}
-     *             and then added as rows.</li>
-     *     </ul>
+     *     <li>If the items are Maps, each map is added as a new row.</li>
+     *     <li>If the items are Tuples, each tuple is converted to a Map and then added as a new row.</li>
+     *     <li>If the items are entities, they are first converted to Maps using {@link #getConvertedEntitiesToMaps(List)}
+     *         and then added as rows.</li>
      * </ul>
      *
      * <p>This method provides a flexible way to add multiple rows of various types to the DataModel, making it versatile for different data sources.</p>
@@ -1127,7 +1119,7 @@ public final class DataModel implements Cloneable{
      * <p><b>Example:</b></p>
      * <pre>
      * DataModel dataModel = new DataModel();
-     * List<MyEntity> entityList = Arrays.asList(new MyEntity("value1", 123), new MyEntity("value2", 456));
+     * List&lt;MyEntity&gt; entityList = Arrays.asList(new MyEntity("value1", 123), new MyEntity("value2", 456));
      * dataModel.addRows(entityList);
      * // The DataModel now contains rows corresponding to the entities in the list.
      * </pre>
@@ -1174,7 +1166,7 @@ public final class DataModel implements Cloneable{
      * <pre>
      * 
      * MemberRepository extends JpaRepository&lt;Member, Long&gt;
-     * @Query("SELECT m.id, m.deptcode, m.email, m.membername, m.regdate FROM Member m")
+     * &#64;Query("SELECT m.id, m.deptcode, m.email, m.membername, m.regdate FROM Member m")
      * List&lt;Object[]&gt; findAllMember();
      * 
      * List&lt;Object[]&gt; results = memberRepository.findAllMember();
@@ -1246,7 +1238,7 @@ public final class DataModel implements Cloneable{
      * <pre>
      * dataModel dataModel = new dataModel();
      * // ... [Define columns for the data model]
-     * List<String> columns = dataModel.getColumns();
+     * List&lt;String&gt; columns = dataModel.getColumns();
      * System.out.println("Columns: " + columns);
      * </pre>
      *
@@ -1266,7 +1258,7 @@ public final class DataModel implements Cloneable{
      * <pre>
      * dataModel dataModel = new dataModel();
      * // ... [Define columns for the data model]
-     * Set<String> columnsSet = dataModel.getColumnsWithSet();
+     * Set&lt;String&gt; columnsSet = dataModel.getColumnsWithSet();
      * System.out.println("Unique Columns: " + columnsSet);
      * </pre>
      *
@@ -1286,7 +1278,7 @@ public final class DataModel implements Cloneable{
      * <pre>
      * dataModel dataModel = new dataModel();
      * // ... [Populate the data model with rows of data]
-     * List<Object> ageValues = dataModel.getColumnValues("age");
+     * List&lt;Object&gt; ageValues = dataModel.getColumnValues("age");
      * System.out.println("All age values: " + ageValues);
      * </pre>
      *
@@ -1338,7 +1330,7 @@ public final class DataModel implements Cloneable{
      * <pre>
      * dataModel dataModel = new dataModel();
      * // ... [Populate the data model with rows of data]
-     * HashMap<String, Object> row = dataModel.getRow(0);
+     * HashMap&lt;String, Object&gt; row = dataModel.getRow(0);
      * System.out.println(row.get("columnName"));
      * </pre>
      *
@@ -1383,8 +1375,8 @@ public final class DataModel implements Cloneable{
      * <pre>
      * dataModel dataModel = new dataModel();
      * // ... [Populate the data model with rows of data]
-     * List<HashMap<String, Object>> allRows = dataModel.getRows();
-     * for (HashMap<String, Object> row : allRows) {
+     * List&lt;HashMap&lt;String, Object&gt;&gt; allRows = dataModel.getRows();
+     * for (HashMap&lt;String, Object&gt; row : allRows) {
      *     System.out.println(row.get("columnName"));
      * }
      * </pre>
@@ -1485,7 +1477,7 @@ public final class DataModel implements Cloneable{
      * <pre>
      * dataModel dataModel = new dataModel();
      * // ... [Populate the data model with rows of data]
-     * HashMap<String, Object> removedRow = dataModel.removeRow(2); // Removes and returns the third row from the data model
+     * HashMap&lt;String, Object&gt; removedRow = dataModel.removeRow(2); // Removes and returns the third row from the data model
      * </pre>
      *
      * <p><b>Note:</b></p>
@@ -1641,8 +1633,6 @@ public final class DataModel implements Cloneable{
 
     /**
      * Retains only the specified columns in the DataModel, removing all others.
-     *
-     * <p>Functionally identical to {@link #validColumns(String...)}, but accepts a List of column names.</p>
      * 
      * @param columns The list of column names to be retained.
      * @return The current dataModel instance retaining only the specified columns.
@@ -1655,8 +1645,6 @@ public final class DataModel implements Cloneable{
 
     /**
      * Retains only the specified columns in the DataModel, removing all others.
-     *
-     * <p>Functionally identical to {@link #validColumns(String...)}, but accepts a Set of column names.</p>
      * 
      * @param columns The set of column names to be retained.
      * @return The current dataModel instance retaining only the specified columns.
@@ -1714,7 +1702,7 @@ public final class DataModel implements Cloneable{
      * <pre>
      * dataModel dataModel = new dataModel();
      * // ... [Populate the data model with columns and rows of data]
-     * HashMap<String, Object> firstNullRow = dataModel.findFirstRowNullColumn("age");  
+     * HashMap&lt;String, Object&gt; firstNullRow = dataModel.findFirstRowNullColumn("age");  
      * // Returns the first row with a null "age" value, or null if no such row exists
      * </pre>
      *
@@ -1784,7 +1772,7 @@ public final class DataModel implements Cloneable{
      * <pre>
      * dataModel dataModel = new dataModel();
      * // ... [Populate the data model with columns and rows of data]
-     * HashMap<String, Object> firstDuplRow = dataModel.findFirstRowDuplColumn("name");  
+     * HashMap&lt;String, Object&gt; firstDuplRow = dataModel.findFirstRowDuplColumn("name");  
      * // Returns the first row with a duplicated "name" value, or null if no such row exists
      * </pre>
      *
@@ -2300,13 +2288,13 @@ public final class DataModel implements Cloneable{
      * 
      * <p><b>Example:</b></p>
      * <pre>
-     * Predicate<HashMap<String, Object>> ageFilter = row -> {
-     *     if (row.containsKey("age") && row.get("age") instanceof Number) {
-     *         return ((Number) row.get("age")).intValue() >= 30;
+     * Predicate&lt;HashMap&lt;String, Object&gt;&gt; ageFilter = row -&gt; {
+     *     if (row.containsKey("age") &amp;&amp; row.get("age") instanceof Number) {
+     *         return ((Number) row.get("age")).intValue() &gt;= 30;
      *     }
      *     return false;
      * };
-     * List<Integer> matchedIndexes = originalDm.filterRowIndexes(ageFilter);
+     * List&lt;Integer&gt; matchedIndexes = originalDm.filterRowIndexes(ageFilter);
      * </pre>
      *
      * @param filter The filter predicate to test each row.
@@ -2327,8 +2315,8 @@ public final class DataModel implements Cloneable{
      * 
      * <p><b>Example:</b></p>
      * <pre>
-     * Predicate<HashMap<String, Object>> nameFilter = row -> "John".equals(row.get("name"));
-     * List<HashMap<String, Object>> matchedRows = originalDm.filterRows(nameFilter);
+     * Predicate&lt;HashMap&lt;String, Object&gt;&gt; nameFilter = row -&gt; "John".equals(row.get("name"));
+     * List&lt;HashMap&lt;String, Object&gt;&gt; matchedRows = originalDm.filterRows(nameFilter);
      * </pre>
      *
      * @param filter The filter predicate to test each row.
@@ -2350,9 +2338,9 @@ public final class DataModel implements Cloneable{
      * 
      * <p><b>Example:</b></p>
      * <pre>
-     * Predicate<HashMap<String, Object>> ageFilter = row -> {
-     *     if (row.containsKey("age") && row.get("age") instanceof Number) {
-     *         return ((Number) row.get("age")).intValue() >= 30;
+     * Predicate&lt;HashMap&lt;String, Object&gt;&gt; ageFilter = row -&gt; {
+     *     if (row.containsKey("age") &amp;&amp; row.get("age") instanceof Number) {
+     *         return ((Number) row.get("age")).intValue() &gt;= 30;
      *     }
      *     return false;
      * };
@@ -2378,7 +2366,7 @@ public final class DataModel implements Cloneable{
      * 
      * <p><b>Example:</b></p>
      * <pre>
-     * Predicate<HashMap<String, Object>> nameFilter = row -> "John".equals(row.get("name"));
+     * Predicate&lt;HashMap&lt;String, Object&gt;&gt; nameFilter = row -&gt; "John".equals(row.get("name"));
      * originalDm.filterAndModify(nameFilter);
      * </pre>
      *

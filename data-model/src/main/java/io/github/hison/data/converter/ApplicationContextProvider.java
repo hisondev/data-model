@@ -5,9 +5,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
-/*
- * ApplicationContextProvider to inject DataConverter into DataModel
- */
 @Component
 public class ApplicationContextProvider implements ApplicationContextAware {
 

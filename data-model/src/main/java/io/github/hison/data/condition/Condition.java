@@ -10,12 +10,11 @@ import java.util.HashMap;
  * <p>This class is primarily used to pass conditions to the search methods within the {@link DataModel}. 
  * It can be thought of as a specialized map tailored for search conditions.</p>
  * 
- * <p>Example usage:
+ * <p>Example usage:</p>
  * <pre>
  *     Condition condition = new Condition("username", "JohnDoe");
  *     dataModel.search(condition);
  * </pre>
- * </p>
  * 
  * @author Hani son
  * @version 1.0.0

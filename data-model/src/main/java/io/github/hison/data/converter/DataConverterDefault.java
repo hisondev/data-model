@@ -68,7 +68,7 @@ public class DataConverterDefault implements DataConverter{
      * <p>Usage:</p>
      * This method is typically invoked before converting an object to a DataModel row, ensuring that the object
      * is a valid entity. It is an integral part of the validation process in methods like 
-     * {@link #getConvertedEntitiesToMaps(List)} to ascertain that only entities are processed for conversion.
+     * {@link DataModel} getConvertedEntitiesToMaps(List) to ascertain that only entities are processed for conversion.
      *
      * @param obj the object to be checked for entity status
      * @return true if the object is an entity (i.e., annotated with {@link Entity}), false otherwise
