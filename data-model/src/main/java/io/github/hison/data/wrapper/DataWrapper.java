@@ -83,16 +83,11 @@ public class DataWrapper implements Cloneable{
 
     /**
      * Associates the specified String value with the specified key in this DataWrapper.
-     * If the value is null, a DataException is thrown, emphasizing that only non-null String values are acceptable.
      *
      * @param key   the key with which the specified value is to be associated.
      * @param value the String value to be associated with the specified key.
-     * @throws DataException if the provided value is null.
      */
     public void putString(String key, String value) {
-        if(value == null) {
-            throw new DataException("Please insert a type of String.");    
-        }
         data.put(key, value);
     }
 
@@ -117,16 +112,11 @@ public class DataWrapper implements Cloneable{
 
     /**
      * Associates the specified dataModel instance with the specified key in this DataWrapper.
-     * If the value is null, a DataException is thrown, indicating that only non-null dataModel instances are accepted.
      *
      * @param key   the key with which the specified dataModel instance is to be associated.
      * @param value the dataModel instance to be associated with the specified key.
-     * @throws DataException if the provided value is null.
      */
     public void putDataModel(String key, DataModel value) {
-        if(value == null) {
-            throw new DataException("Please insert a type of DataModel.");    
-        }
         data.put(key, value);
     }
 
