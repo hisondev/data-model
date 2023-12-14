@@ -1,7 +1,8 @@
 package io.github.hison.data.condition;
 
-import io.github.hison.data.model.DataModel;
 import java.util.HashMap;
+
+import io.github.hison.data.model.DataModel;
 
 /**
  * The {@code Condition} class provides a way to define search conditions for the {@link DataModel} methods.
