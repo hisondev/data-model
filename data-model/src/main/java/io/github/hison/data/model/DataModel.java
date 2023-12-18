@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.node.NullNode;
 
 import io.github.hison.data.condition.Condition;
 import io.github.hison.data.converter.DataConverter;
-import io.github.hison.data.converter.DataConverterProvider;
+import io.github.hison.data.converter.DataConverterFactory;
 import io.github.hison.data.exception.DataException;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -72,7 +72,28 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * ]
  * //insert rows
  * </pre>
+ * 
+ * <p>Customization:</p>
+ * Developers using the DataModel.jar can customize the data conversion process by extending this class. 
+ * Custom converters can be defined by extending the `DataConverterDefault` class and registering the custom 
+ * converter using the `DataConverterFactory`. This allows for tailored data handling strategies that fit 
+ * specific application requirements.
  *
+ * <pre>
+ * public class CustomDataConverter extends DataConverterDefault {
+ *     public static void register() {
+ *         DataConverterFactory.setCustomConverter(new CustomDataConverter());
+ *     }
+ *     // Custom logic...
+ * }
+ *
+ * public class Application {
+ *     public static void main(String[] args) {
+ *         CustomDataConverter.register(); // Registering the custom converter
+ *     }
+ * }
+ * </pre>
+ * 
  * <p>Usage:</p>
  * <ul>
  *     <li>For custom conversion logic, define a new {@link DataConverter} and configure it as a Spring bean.</li>
@@ -80,7 +101,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * </ul>
  *
  * @author Hani son
- * @version 1.0.0
+ * @version 1.0.2
  */
 @JsonDeserialize(using = DataModelDeserializer.class)
 @JsonSerialize(using = DataModelSerializer.class)
@@ -89,7 +110,7 @@ public final class DataModel implements Cloneable{
     private ArrayList<HashMap<String, Object>> rows;
     
     private DataConverter getConverter() {
-        return DataConverterProvider.getConverter();
+        return DataConverterFactory.getConverter();
     }
 
     private HashMap<String, Object> parseJsonObjectToDataModel(JsonNode node) {

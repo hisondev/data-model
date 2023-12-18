@@ -14,9 +14,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import io.github.hison.data.exception.DataException;
 import io.github.hison.data.model.DataModel;
@@ -146,32 +144,34 @@ public class DataConverterDefault implements DataConverter{
     }
     
     /**
-     * Configures and returns a customized {@link ObjectMapper} for serializing DataModel objects to JSON.
-     * This method specifically sets up the ObjectMapper with necessary modules and configurations to handle
-     * custom data types such as {@link LocalDateTime}, ensuring accurate and efficient serialization of data.
+     * Provides a customized {@link ObjectMapper} for serializing and deserializing data models to and from JSON.
+     * This method configures the ObjectMapper with user-defined serializers and deserializers for handling
+     * Java 8 date-time types, particularly {@link LocalDateTime}, with flexible format customization.
      *
      * <p>Key Configurations:</p>
      * <ul>
-     *     <li>Registers the {@link JavaTimeModule} to handle Java 8 date-time types, particularly customizing 
-     *         the deserialization and serialization of {@link LocalDateTime} to the format specified by {@link #getDateFormat()}.</li>
-     *     <li>Disables {@link DeserializationFeature#FAIL_ON_UNKNOWN_PROPERTIES} to ignore unknown properties 
-     *         during deserialization, providing flexibility in JSON data structure handling.</li>
-     *     <li>Configures {@link SerializationFeature#FAIL_ON_SELF_REFERENCES} to false to prevent issues with 
-     *         self-referential objects.</li>
+     *     <li>Registers a {@link SimpleModule} with custom {@link LocalDateTimeSerializer} and 
+     *         {@link LocalDateTimeDeserializer}. These handle the serialization and deserialization 
+     *         of {@link LocalDateTime} using a format defined by {@link #getDateFormat()}.</li>
+     *     <li>Disables {@link DeserializationFeature#FAIL_ON_UNKNOWN_PROPERTIES} to allow smooth 
+     *         deserialization of JSON with additional unknown properties, enhancing the flexibility 
+     *         in JSON structure handling.</li>
+     *     <li>Sets {@link SerializationFeature#FAIL_ON_SELF_REFERENCES} to false to prevent 
+     *         serialization issues with self-referential objects.</li>
      * </ul>
      *
-     * <p>This configured ObjectMapper is used throughout the DataModel's JSON conversion processes, ensuring 
-     * consistent handling of date-time formats and unknown properties.</p>
+     * <p>This customized ObjectMapper ensures consistent and efficient handling of date-time formats 
+     * and provides resilience against varying JSON structures, essential for robust data model processing.</p>
      *
-     * @return a configured {@link ObjectMapper} instance for DataModel to JSON serialization
+     * @return a tailored {@link ObjectMapper} instance for robust serialization and deserialization of data models
      */
     @Override
     public ObjectMapper getObjectMapperForConvertDataModelToJson() {
         ObjectMapper mapper = new ObjectMapper();
-        JavaTimeModule javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(getDateFormat())));
-        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(getDateFormat())));
-        mapper.registerModule(javaTimeModule);
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(getDateFormat()));
+        module.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(getDateFormat()));
+        mapper.registerModule(module);
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.configure(SerializationFeature.FAIL_ON_SELF_REFERENCES, false);
 
@@ -218,12 +218,14 @@ public class DataConverterDefault implements DataConverter{
      *
      * <p>Configurations:</p>
      * <ul>
-     *     <li>Includes the {@link JavaTimeModule} to properly deserialize Java 8 date-time types.</li>
-     *     <li>Configures the deserialization and serialization of {@link LocalDateTime} to a specific format from getDateFormat().</li>
-     *     <li>Disables {@link DeserializationFeature#FAIL_ON_UNKNOWN_PROPERTIES} to prevent errors 
-     *         on encountering unknown JSON properties, providing robustness in JSON parsing.</li>
-     *     <li>Sets {@link SerializationFeature#FAIL_ON_SELF_REFERENCES} to false to avoid serialization 
-     *         issues with self-referential objects.</li>
+     *     <li>Registers a {@link SimpleModule} with custom {@link LocalDateTimeSerializer} and 
+     *         {@link LocalDateTimeDeserializer}. These handle the serialization and deserialization 
+     *         of {@link LocalDateTime} using a format defined by {@link #getDateFormat()}.</li>
+     *     <li>Disables {@link DeserializationFeature#FAIL_ON_UNKNOWN_PROPERTIES} to allow smooth 
+     *         deserialization of JSON with additional unknown properties, enhancing the flexibility 
+     *         in JSON structure handling.</li>
+     *     <li>Sets {@link SerializationFeature#FAIL_ON_SELF_REFERENCES} to false to prevent 
+     *         serialization issues with self-referential objects.</li>
      * </ul>
      *
      * <p>This configured ObjectMapper is crucial for transforming JSON data contained in DataModel rows 
@@ -234,10 +236,10 @@ public class DataConverterDefault implements DataConverter{
     @Override
     public ObjectMapper getObjectMapperForConvertDataModelToEntities() {
         ObjectMapper mapper = new ObjectMapper();
-        JavaTimeModule javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(getDateFormat())));
-        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(getDateFormat())));
-        mapper.registerModule(javaTimeModule);
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(getDateFormat()));
+        module.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(getDateFormat()));
+        mapper.registerModule(module);
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.configure(SerializationFeature.FAIL_ON_SELF_REFERENCES, false);
 
@@ -251,13 +253,14 @@ public class DataConverterDefault implements DataConverter{
      *
      * <p>Configurations:</p>
      * <ul>
-     *     <li>Incorporates the {@link JavaTimeModule} to facilitate the serialization of Java 8 date-time types, 
-     *         particularly customizing the deserializer and serialization of {@link LocalDateTime} to the format specified by 
-     *         {@link #getDateFormat()}.</li>
-     *     <li>Disables {@link DeserializationFeature#FAIL_ON_UNKNOWN_PROPERTIES} to allow more flexibility in dealing 
-     *         with varying JSON structures without causing errors during deserialization.</li>
-     *     <li>Sets {@link SerializationFeature#FAIL_ON_SELF_REFERENCES} to false to prevent serialization issues 
-     *         with self-referential objects.</li>
+     *     <li>Registers a {@link SimpleModule} with custom {@link LocalDateTimeSerializer} and 
+     *         {@link LocalDateTimeDeserializer}. These handle the serialization and deserialization 
+     *         of {@link LocalDateTime} using a format defined by {@link #getDateFormat()}.</li>
+     *     <li>Disables {@link DeserializationFeature#FAIL_ON_UNKNOWN_PROPERTIES} to allow smooth 
+     *         deserialization of JSON with additional unknown properties, enhancing the flexibility 
+     *         in JSON structure handling.</li>
+     *     <li>Sets {@link SerializationFeature#FAIL_ON_SELF_REFERENCES} to false to prevent 
+     *         serialization issues with self-referential objects.</li>
      * </ul>
      *
      * <p>This method is used in the conversion process where entity objects need to be transformed into a format 
@@ -269,10 +272,10 @@ public class DataConverterDefault implements DataConverter{
     @Override
     public ObjectMapper getObjectMapperForConvertEntitiesToDataModel() {
         ObjectMapper mapper = new ObjectMapper();
-        JavaTimeModule javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(getDateFormat())));
-        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(getDateFormat())));
-        mapper.registerModule(javaTimeModule);
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(getDateFormat()));
+        module.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(getDateFormat()));
+        mapper.registerModule(module);
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.configure(SerializationFeature.FAIL_ON_SELF_REFERENCES, false);
 
