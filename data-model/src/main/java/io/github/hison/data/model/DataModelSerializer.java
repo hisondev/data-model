@@ -10,6 +10,6 @@ public class DataModelSerializer extends JsonSerializer<DataModel> {
 
     @Override
     public void serialize(DataModel dataModel, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeTree(dataModel.getConvertedJson());
+        dataModel.serialize(dataModel, gen, serializers);
     }
 }

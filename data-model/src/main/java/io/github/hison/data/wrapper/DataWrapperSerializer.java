@@ -17,6 +17,7 @@ public class DataWrapperSerializer extends JsonSerializer<DataWrapper> {
         gen.writeStartObject();
         
         HashMap<String, Object> data = value.getDatas();
+        DataModel dataModel = new DataModel();
 
         Set<String> keys = data.keySet();
         for (String key : keys) {
@@ -26,7 +27,8 @@ public class DataWrapperSerializer extends JsonSerializer<DataWrapper> {
                 gen.writeStringField(key, (String)data.get(key));
             } else if (data.get(key) instanceof DataModel) {
                 gen.writeFieldName(key);
-                gen.writeTree(((DataModel)data.get(key)).getConvertedJson());
+                dataModel = (DataModel)data.get(key);
+                dataModel.serialize(dataModel, gen, serializers);
             }
         }
 

@@ -1,19 +1,23 @@
 package io.github.hison.data.converter;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Entity;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import io.github.hison.data.exception.DataException;
@@ -133,7 +137,7 @@ public class DataConverterDefault implements DataConverter{
      * @return a {@link JsonNode} representing the rows of the DataModel in JSON array format
      * @throws DataException if any issues occur during the conversion process
      */
-    @Override
+    // @Override
     public JsonNode getConvertedJson(DataModel dm) {
         ObjectMapper mapper = getObjectMapperForConvertDataModelToJson();
         try {
@@ -141,6 +145,49 @@ public class DataConverterDefault implements DataConverter{
         } catch (Exception e) {
             throw new DataException("Failed to convert DataModel to Json in getConvertedJson", e);
         }
+    }
+
+    /**
+     * Serializes a {@link DataModel} instance into a JSON array format using a {@link JsonGenerator}.
+     * This method converts each row of the DataModel into a JSON object and writes it into a JSON array.
+     * Special data types are handled according to the custom configurations of the ObjectMapper obtained from 
+     * {@link #getObjectMapperForConvertDataModelToJson()}.
+     *
+     * <p>Process:</p>
+     * <ul>
+     *     <li>Starts a JSON array using {@link JsonGenerator#writeStartArray()}.</li>
+     *     <li>Iterates over each row in the DataModel, converting and writing each as a JSON object.</li>
+     *     <li>Handles null values appropriately, ensuring they are represented correctly in the JSON output.</li>
+     *     <li>Ends the JSON array using {@link JsonGenerator#writeEndArray()}.</li>
+     * </ul>
+     *
+     * <p>This method is particularly useful for converting DataModel instances to a JSON format suitable for
+     * data exchange, storage, or further processing. It encapsulates custom serialization logic, ensuring
+     * that the DataModel's data is accurately and efficiently represented in JSON.</p>
+     *
+     * @param dataModel The DataModel instance to be serialized.
+     * @param gen The JsonGenerator used for writing JSON content.
+     * @param serializers Provider that can be used to get serializers for serializing Objects value contains, if any.
+     * @throws DataException if any issues occur during the conversion to JSON.
+     */
+    @Override
+    public void serialize(DataModel dataModel, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        ObjectMapper mapper = getObjectMapperForConvertDataModelToJson();
+        gen.writeStartArray();
+        for (HashMap<String, Object> row : dataModel.getRows()) {
+            gen.writeStartObject();
+            for (Map.Entry<String, Object> entry : row.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                if (value == null) {
+                    gen.writeNullField(key);
+                } else {
+                    gen.writeStringField(key, mapper.writeValueAsString(value));
+                }
+            }
+            gen.writeEndObject();
+        }
+        gen.writeEndArray();
     }
     
     /**

@@ -1,5 +1,6 @@
 package io.github.hison.data.model;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
@@ -20,9 +21,11 @@ import javax.persistence.Tuple;
 import javax.persistence.TupleElement;
 import javax.servlet.http.HttpSession;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.node.NullNode;
 
 import io.github.hison.data.condition.Condition;
@@ -620,6 +623,31 @@ public final class DataModel implements Cloneable{
      */
     public JsonNode getConvertedJson() {
         return getConverter().getConvertedJson(this);
+    }
+
+    /**
+     * Serializes the current instance of DataModel into JSON format using a {@link JsonGenerator}.
+     * This method delegates the serialization process to the {@link DataConverter#serialize(DataModel, JsonGenerator, SerializerProvider)} method,
+     * allowing for a flexible and customizable serialization process.
+     *
+     * <p>Process:</p>
+     * <ul>
+     *     <li>Delegates the serialization task to the DataConverter's serialize method.</li>
+     *     <li>Ensures that the DataModel's structure, including its columns and rows, is accurately represented in the JSON output.</li>
+     *     <li>Handles the serialization process in a way that accommodates custom data types and formatting requirements as defined in the DataConverter.</li>
+     * </ul>
+     *
+     * <p>This method is crucial for converting the DataModel into a JSON representation suitable for data exchange,
+     * storage, or further processing. It encapsulates the complexity of the serialization process while providing
+     * flexibility through the use of a customizable DataConverter.</p>
+     *
+     * @param dataModel The DataModel instance to be serialized.
+     * @param gen The JsonGenerator used for writing JSON content.
+     * @param serializers Provider that can be used to get serializers for serializing Objects value contains, if any.
+     * @throws IOException if any issues occur during the conversion to JSON.
+     */
+    public void serialize(DataModel dataModel, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        getConverter().serialize(dataModel, gen, serializers);
     }
 
     /**
