@@ -104,7 +104,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * </ul>
  *
  * @author Hani son
- * @version 1.0.2
+ * @version 1.0.4
  */
 @JsonDeserialize(using = DataModelDeserializer.class)
 @JsonSerialize(using = DataModelSerializer.class)
@@ -163,6 +163,12 @@ public final class DataModel implements Cloneable{
         }
         if (rowIndex < 0 || rowIndex >= rows.size()) {
             throw new DataException("Provided Index: " + rowIndex + " is out of range. Valid range is 0 to " + (rows.size() - 1) + ".");
+        }
+    }
+
+    private void checkAddRowsRange(int rowIndex) {
+        if (rowIndex < 0 || rowIndex > rows.size()) {
+            throw new DataException("Provided Index: " + rowIndex + " is out of range. Valid range is 0 to " + rows.size() + ".");
         }
     }
 
@@ -360,7 +366,7 @@ public final class DataModel implements Cloneable{
         this.cols = new LinkedHashSet<String>();
         this.rows = new ArrayList<HashMap<String, Object>>();
         
-        addRow((JsonNode) node);
+        addRows((JsonNode) node);
     }
 
     /**
@@ -832,7 +838,120 @@ public final class DataModel implements Cloneable{
     }
 
     /**
-     * Adds a new row to the DataModel, converting and integrating the provided data into the existing structure.
+     * Adds an empty row to the end of the DataModel. This method utilizes the {@link #addRow(int)} method
+     * by passing the current size of the rows as the index, effectively appending the new row to the end.
+     *
+     * The new row will have the same columns as the existing rows (if any), with all values set to null.
+     * If there are no existing rows but columns are defined, an empty row with null values for those columns is added.
+     * If both rows and columns are empty, a DataException is thrown, indicating that columns should be added first.
+     *
+     * <p>This method simplifies the process of adding a new row to the DataModel by automatically appending it to the end,
+     * maintaining the structural integrity and allowing for dynamic data manipulation.</p>
+     *
+     * <p><b>Example:</b></p>
+     * <pre>
+     * DataModel dataModel = new DataModel();
+     * // Assume dataModel is initialized with some columns
+     * dataModel.addRow(); // Adds an empty row at the end of the DataModel
+     * </pre>
+     *
+     * @return the current instance of DataModel, with the new row appended at the end
+     * @throws DataException if both rows and columns are empty
+     */
+    public DataModel addRow() {
+        return addRow(rows.size());
+    }
+
+    /**
+     * Adds an empty row at the specified index in the DataModel. The new row will have the same columns
+     * as the existing rows (if any), but all values will be set to null.
+     * If there are no existing rows but columns are defined, an empty row with null values for those columns is added.
+     * If both rows and columns are empty, a DataException is thrown, indicating that columns should be added first.
+     *
+     * <p>This method enables the insertion of an empty row at a specific position within the DataModel,
+     * maintaining the structure consistency and allowing for dynamic data manipulation.</p>
+     *
+     * <p>Key Aspects:</p>
+     * <ul>
+     *     <li>Initializes a new row (HashMap) with null values for each column.</li>
+     *     <li>Inserts the new row at the specified index in the rows list.</li>
+     * </ul>
+     *
+     * <p><b>Example:</b></p>
+     * <pre>
+     * DataModel dataModel = new DataModel();
+     * // Assume dataModel is initialized with some columns and rows
+     * dataModel.addRow(2); // Adds an empty row at the third position
+     * </pre>
+     *
+     * @param rowIndex the index at which the new row should be inserted
+     * @return the current instance of DataModel, with the new row added at the specified index
+     * @throws DataException if both rows and columns are empty, or if the rowIndex is out of the valid range
+     */
+    public DataModel addRow(int rowIndex) {
+        checkAddRowsRange(rowIndex);
+
+        if (rows.isEmpty() && cols.isEmpty()) {
+            throw new DataException("Please add columns first.");
+        }
+
+        HashMap<String, Object> newRow = new HashMap<>();
+        if (!rows.isEmpty()) {
+            // Copy column keys from the last row in rows
+            for (String key : rows.get(rows.size() - 1).keySet()) {
+                newRow.put(key, null);
+            }
+        } else {
+            // If rows is empty but cols is not, use cols keys
+            for (String key : cols) {
+                newRow.put(key, null);
+            }
+        }
+
+        rows.add(rowIndex, newRow);
+        return this;
+    };
+
+    /**
+     * Adds a new row to the end of the DataModel, converting and integrating the provided data into the existing structure.
+     * This method delegates to {@link #addRow(int, Map)} using the current size of the rows as the index,
+     * effectively appending the new row to the end of the DataModel.
+     * 
+     * Each key in the newRow map corresponds to a column in the DataModel, and the values are processed
+     * using {@link DataConverter#getConvertValueToDataModelRowValue(Object)} to ensure they are in the appropriate format.
+     * 
+     * <p>Key Aspects:</p>
+     * <ul>
+     *     <li>Initializes columns (cols) if they are not already set, using the keys from the newRow map.</li>
+     *     <li>Converts each value in the newRow map to the appropriate format for the DataModel using the 
+     *         configured DataConverter.</li>
+     *     <li>Checks for type consistency in each column. If a type mismatch is detected, a {@link DataException} is thrown.</li>
+     *     <li>Null values are added for any columns present in DataModel but missing in the newRow map.</li>
+     *     <li>Adds the new row to the end of the existing rows.</li>
+     * </ul>
+     *
+     * <p>This method simplifies the process of adding a new row to the DataModel by automatically appending it to the end,
+     * maintaining the structural integrity and type consistency of the DataModel.</p>
+     *
+     * <p><b>Example:</b></p>
+     * <pre>
+     * DataModel dataModel = new DataModel();
+     * Map&lt;String, Object&gt; newRow = new HashMap&lt;&gt;();
+     * newRow.put("column1", "value1");
+     * newRow.put("column2", 123);
+     * dataModel.addRow(newRow);
+     * // The DataModel now contains a new row at the end with "value1" in "column1" and 123 in "column2".
+     * </pre>
+     *
+     * @param newRow a map representing the new row to be added, where keys are column names and values are the corresponding data
+     * @return the current instance of DataModel, with the new row appended at the end
+     */
+    public DataModel addRow(Map<String, Object> newRow) {
+        return addRow(rows.size(), newRow);
+    }
+
+    /**
+     * Adds a new row to the DataModel at a specified index, converting and integrating the provided data into the existing structure.
      * Each key in the newRow map corresponds to a column in the DataModel, and the values are processed
      * using {@link DataConverter#getConvertValueToDataModelRowValue(Object)} to ensure they are in the appropriate format.
      *
@@ -843,10 +962,11 @@ public final class DataModel implements Cloneable{
      *         configured DataConverter.</li>
      *     <li>Checks for type consistency in each column. If a type mismatch is detected, a {@link DataException} is thrown.</li>
      *     <li>Null values are added for any columns present in DataModel but missing in the newRow map.</li>
+     *     <li>Inserts the new row at the specified index in the rows list.</li>
      * </ul>
      *
-     * <p>This method is central to the dynamic construction of the DataModel, allowing rows of data 
-     * to be added progressively while maintaining type integrity and structure consistency.</p>
+     * <p>This method enhances the dynamic construction of the DataModel, allowing rows of data 
+     * to be inserted at a specific position while maintaining type integrity and structure consistency.</p>
      *
      * <p><b>Example:</b></p>
      * <pre>
@@ -854,19 +974,23 @@ public final class DataModel implements Cloneable{
      * Map&lt;String, Object&gt; newRow = new HashMap&lt;&gt;();
      * newRow.put("column1", "value1");
      * newRow.put("column2", 123);
-     * dataModel.addRow(newRow);
-     * // The DataModel now contains a row with "value1" in "column1" and 123 in "column2".
+     * dataModel.addRow(0, newRow);
+     * // The DataModel now contains a row at the first position with "value1" in "column1" and 123 in "column2".
      * </pre>
      *
+     * @param rowIndex the index at which the new row should be inserted
      * @param newRow a map representing the new row to be added, where keys are column names and values are the corresponding data
-     * @return the current instance of DataModel, with the new row added
-     * @throws DataException if a column in newRow does not exist in DataModel, or if there's a type mismatch in any column
+     * @return the current instance of DataModel, with the new row inserted at the specified index
+     * @throws DataException if a column in newRow does not exist in DataModel, if there's a type mismatch in any column,
+     *                       or if the rowIndex is out of the valid range
      */
-    public DataModel addRow(Map<String, Object> newRow){
+    public DataModel addRow(int rowIndex, Map<String, Object> newRow) {
+        checkAddRowsRange(rowIndex);
+    
         if (cols.isEmpty()) {
             cols.addAll(newRow.keySet());
         }
-        
+
         /*
         // An error occurs if a column that does not exist exists.
         for (String key : newRow.keySet()) {
@@ -875,15 +999,15 @@ public final class DataModel implements Cloneable{
             }
         }
         */
-
+    
         HashMap<String, Object> hm = new HashMap<String, Object>();
         for (String key : cols) {
-            if(newRow.containsKey(key)) {
+            if (newRow.containsKey(key)) {
                 Object value = getConverter().getConvertValueToDataModelRowValue(newRow.get(key));
-                if(!rows.isEmpty()) {
-                    if(rows.get(rows.size() - 1).get(key) != null && value != null) {
-                        if(rows.get(rows.size() - 1).get(key).getClass() != value.getClass()) {
-                            throw new DataException(" Please enter the same type. Column: " + key);
+                if (!rows.isEmpty()) {
+                    if (rows.get(rows.size() - 1).get(key) != null && value != null) {
+                        if (rows.get(rows.size() - 1).get(key).getClass() != value.getClass()) {
+                            throw new DataException("Please enter the same type. Column: " + key);
                         }
                     }
                 }
@@ -892,23 +1016,26 @@ public final class DataModel implements Cloneable{
                 hm.put(key, null);
             }
         }
-
-        rows.add(hm);
-
+    
+        // Insert the new row at the specified index
+        rows.add(rowIndex, hm);
+    
         return this;
     }
 
     /**
-     * Adds a new row of data to this dataModel instance based on the provided Tuple.
+     * Adds a new row of data to the end of this DataModel instance based on the provided Tuple.
      * 
-     * <p>The method will extract elements from the {@code Tuple} and map them into a row using the
-     * aliases of the Tuple elements as column names.</p>
+     * <p>This method delegates the addition of a new row to {@link #addRow(int, Tuple)}, using the current size
+     * of the rows as the index. It extracts elements from the {@code Tuple} and maps them into a row, using the
+     * aliases of the Tuple elements as column names. If the {@code Tuple} is null, the method will
+     * simply return without adding any row.</p>
      * 
-     * <p>If the provided {@code Tuple} is null, the method will simply return without adding any row.</p>
+     * <p>If an element of the Tuple does not have an alias, the method will not add a row and return the current instance.</p>
      * 
-     * @param tuple A Tuple containing data to be added as a new row. 
+     * @param tuple A Tuple containing data to be added as a new row.
      *              Each TupleElement's alias will be used as the column name for that data.
-     * @return The current dataModel instance with the added row.
+     * @return The current DataModel instance with the added row at the end.
      *
      * <p><b>Example:</b></p>
      * <pre>
@@ -920,8 +1047,8 @@ public final class DataModel implements Cloneable{
      * Query query = em.createQuery("SELECT name AS nameAlias, age AS ageAlias FROM Person", Tuple.class);
      * List<Tuple> results = query.getResultList();
      * 
-     * // Create a new dataModel and add each tuple as a row
-     * dataModel dataModel = new dataModel();
+     * // Create a new DataModel and add each tuple as a row at the end
+     * DataModel dataModel = new DataModel();
      * for (Tuple tuple : results) {
      *     dataModel.addRow(tuple);
      * }
@@ -929,6 +1056,46 @@ public final class DataModel implements Cloneable{
      * </pre>
      */
     public DataModel addRow(Tuple tuple) {
+        return addRow(rows.size(), tuple);
+    }
+
+    /**
+     * Adds a new row of data at the specified index in this DataModel instance based on the provided Tuple.
+     * 
+     * <p>This method extracts elements from the {@code Tuple} and maps them into a row, using the
+     * aliases of the Tuple elements as column names. If the {@code Tuple} is null, the method will
+     * simply return without adding any row.</p>
+     * 
+     * <p>If an element of the Tuple does not have an alias, a DataException is thrown, prompting
+     * to specify an alias in the query.</p>
+     * 
+     * @param rowIndex The index at which the new row should be inserted.
+     * @param tuple A Tuple containing data to be added as a new row. 
+     *              Each TupleElement's alias will be used as the column name for that data.
+     * @return The current DataModel instance with the added row at the specified index.
+     * @throws DataException if an element of the Tuple does not have an alias
+     *
+     * <p><b>Example:</b></p>
+     * <pre>
+     * {@code
+     * // Using JPA's EntityManager
+     * EntityManager em = ... // Obtain an EntityManager instance.
+     *
+     * // Example JPQL query
+     * Query query = em.createQuery("SELECT name AS nameAlias, age AS ageAlias FROM Person", Tuple.class);
+     * List<Tuple> results = query.getResultList();
+     * 
+     * // Create a new DataModel and add each tuple as a row at a specified index
+     * DataModel dataModel = new DataModel();
+     * int index = 0;
+     * for (Tuple tuple : results) {
+     *     dataModel.addRow(index, tuple);
+     *     index++;
+     * }
+     * }
+     * </pre>
+     */
+    public DataModel addRow(int rowIndex, Tuple tuple) {
         if (tuple != null) {
             HashMap<String, Object> row = new HashMap<>();
             for (TupleElement<?> element : tuple.getElements()) {
@@ -937,26 +1104,28 @@ public final class DataModel implements Cloneable{
                 }
                 row.put(element.getAlias(), tuple.get(element.getAlias()));
             }
-            addRow(row);
+            addRow(rowIndex, row);
         }
         return this;
     }
     
     /**
-     * Adds a new row of data to this dataModel instance based on the provided array of objects and the array of column names.
+     * Adds a new row of data to the end of this DataModel instance based on the provided array of objects and the array of column names.
      * 
-     * <p>The method maps the elements from the {@code queryResult} to the respective column names in {@code columnNames} 
-     * and then adds them as a new row to the dataModel instance.</p>
+     * <p>This method delegates the addition of a new row to {@link #addRow(int, Object[], String[])}, using the current size
+     * of the rows as the index. It maps the elements from the {@code queryResult} array to the respective column names in 
+     * {@code columnNames} and then adds them as a new row to the end of the DataModel instance.</p>
      * 
      * <p>If the sizes of the two provided arrays do not match, or if any of the arrays is null, the method will throw a DataException.</p>
      * 
      * @param queryResult An array of objects containing data to be added as a new row.
      * @param columnNames An array of strings where each string represents the column name for the respective data in {@code queryResult}.
-     * @return The current dataModel instance with the added row.
+     * @return The current DataModel instance with the added row at the end.
+     * @throws DataException if there is a mismatch between the lengths of {@code queryResult} and {@code columnNames}, or if either is null.
      * 
      * <p><b>Notice:</b> The length of the <code>columnNames</code> array should match the number 
-     * of columns in each object array within the <code>queryResults</code>. If there's a mismatch, 
-     * it may lead to out of bounds exceptions or missing data.</p>
+     * of elements in the <code>queryResult</code> array. If there's a mismatch, 
+     * it may lead to a DataException indicating an issue with the input arrays.</p>
      *
      * <p><b>Example:</b></p>
      * <pre>
@@ -964,20 +1133,57 @@ public final class DataModel implements Cloneable{
      * List&lt;Object[]&gt; results = memberRepository.findAllProjectedBy();
      * String[] columnNames = new String[]{"name", "age", "profession"};
      * 
-     * // Create a new dataModel and add the result as a row
-     * dataModel dataModel = new dataModel();
+     * // Create a new DataModel and add each array of results as a row at the end
+     * DataModel dataModel = new DataModel();
      * for (Object[] result : results) {
      *     dataModel.addRow(result, columnNames);
      * }
      * </pre>
      */
     public DataModel addRow(Object[] queryResult, String[] columnNames) {
+        return addRow(rows.size(), queryResult, columnNames);
+    }
+
+    /**
+     * Adds a new row of data at the specified index in this DataModel instance based on the provided array of objects and the array of column names.
+     * 
+     * <p>This method maps the elements from the {@code queryResult} array to the respective column names in {@code columnNames} 
+     * and then adds them as a new row at the specified index in the DataModel instance.</p>
+     * 
+     * <p>If the sizes of the two provided arrays do not match, or if any of the arrays is null, the method will throw a DataException.</p>
+     * 
+     * @param rowIndex The index at which the new row should be inserted.
+     * @param queryResult An array of objects containing data to be added as a new row.
+     * @param columnNames An array of strings where each string represents the column name for the respective data in {@code queryResult}.
+     * @return The current DataModel instance with the added row at the specified index.
+     * @throws DataException if there is a mismatch between the lengths of {@code queryResult} and {@code columnNames}, or if either is null.
+     * 
+     * <p><b>Notice:</b> The length of the <code>columnNames</code> array should match the number 
+     * of elements in the <code>queryResult</code> array. If there's a mismatch, 
+     * it may lead to a DataException indicating an issue with the input arrays.</p>
+     *
+     * <p><b>Example:</b></p>
+     * <pre>
+     * // Example result from a query
+     * List&lt;Object[]&gt; results = memberRepository.findAllProjectedBy();
+     * String[] columnNames = new String[]{"name", "age", "profession"};
+     * 
+     * // Create a new DataModel and add the result as a row at a specified index
+     * DataModel dataModel = new DataModel();
+     * int index = 0;
+     * for (Object[] result : results) {
+     *     dataModel.addRow(index, result, columnNames);
+     *     index++;
+     * }
+     * </pre>
+     */
+    public DataModel addRow(int rowIndex, Object[] queryResult, String[] columnNames) {
         if (queryResult != null && columnNames != null && queryResult.length == columnNames.length) {
             HashMap<String, Object> row = new HashMap<>();
             for (int i = 0; i < columnNames.length; i++) {
                 row.put(columnNames[i], queryResult[i]);
             }
-            addRow(row);
+            addRow(rowIndex, row);
         } else {
             throw new DataException("Mismatch between data and column names, or invalid input.");
         }
@@ -985,12 +1191,14 @@ public final class DataModel implements Cloneable{
     }
 
     /**
-     * Adds a new row of data to this dataModel instance based on the attributes found in the provided {@code HttpSession}.
+     * Adds a new row of data to the end of this DataModel instance based on the attributes found in the provided {@code HttpSession}.
      * 
-     * <p>The method extracts each attribute's name and value from the {@code HttpSession} and maps them as key-value pairs in a new row.</p>
+     * <p>This method extracts each attribute's name and value from the {@code HttpSession} and maps them as key-value pairs in a new row,
+     * which is then appended to the end of the DataModel. The method delegates the addition of the row to 
+     * {@link #addRow(int, HttpSession)}, using the current size of the rows as the index.</p>
      * 
      * @param session An HttpSession instance containing attributes that should be added as a new row.
-     * @return The current dataModel instance with the added row.
+     * @return The current DataModel instance with the added row at the end.
      *
      * <p><b>Example:</b></p>
      * <pre>
@@ -1000,13 +1208,42 @@ public final class DataModel implements Cloneable{
      * session.setAttribute("username", "JohnDoe");
      * session.setAttribute("lastLogin", new Date());
      * 
-     * // Create a new dataModel and add the session's attributes as a row
-     * dataModel dataModel = new dataModel();
+     * // Create a new DataModel and add the session's attributes as a row at the end
+     * DataModel dataModel = new DataModel();
      * dataModel.addRow(session);
      * }
      * </pre>
      */
     public DataModel addRow(HttpSession session) {
+        return addRow(rows.size(), session);
+    }
+
+    /**
+     * Adds a new row of data at the specified index in this DataModel instance based on the attributes found in the provided {@code HttpSession}.
+     * 
+     * <p>This method extracts each attribute's name and value from the {@code HttpSession} and maps them as key-value pairs in a new row.
+     * The row is then inserted at the specified index in the DataModel.</p>
+     * 
+     * @param rowIndex The index at which the new row should be inserted.
+     * @param session An HttpSession instance containing attributes that should be added as a new row.
+     * @return The current DataModel instance with the added row at the specified index.
+     *
+     * <p><b>Example:</b></p>
+     * <pre>
+     * {@code
+     * // Simulating setting attributes in an HttpSession
+     * HttpSession session = request.getSession();
+     * session.setAttribute("username", "JohnDoe");
+     * session.setAttribute("lastLogin", new Date());
+     * 
+     * // Create a new DataModel and add the session's attributes as a row at a specified index
+     * DataModel dataModel = new DataModel();
+     * int index = 0;
+     * dataModel.addRow(index, session);
+     * }
+     * </pre>
+     */
+    public DataModel addRow(int rowIndex, HttpSession session) {
         Enumeration<String> attributeNames = session.getAttributeNames();
         HashMap<String, Object> row = new HashMap<String, Object>();
 
@@ -1016,100 +1253,43 @@ public final class DataModel implements Cloneable{
 
             row.put(attributeName, attributeValue);
         }
-        addRow(row);
-        return this;
+        return addRow(rowIndex, row);
     }
-
+        
     /**
-     * Adds rows of data to this dataModel instance based on the data found in the provided {@code ResultSet}.
-     * 
-     * <p>This method fetches data from the ResultSet, which typically contains the result of a SQL query executed using JDBC, and transforms this data into rows in the dataModel format.</p>
-     * 
-     * @param rs A ResultSet instance containing data from a database query.
-     * @return The current dataModel instance with the added rows.
+     * Adds a new row to the DataModel at the end using an entity object. The entity is first converted to a Map representation,
+     * with each field of the entity corresponding to a column in the DataModel. This conversion process utilizes
+     * a customized {@link ObjectMapper} obtained from {@link DataConverter} getObjectMapperForConvertEntitiesToDataModel(),
+     * allowing for user-defined data conversion strategies.
+     *
+     * <p>This method delegates the addition of the new row to {@link #addRow(int, Object)}, using the current size of the rows
+     * as the index. It ensures that the entity's data is accurately represented within the DataModel's tabular structure at the end.</p>
      *
      * <p><b>Example:</b></p>
      * <pre>
      * {@code
-     * try {
-     *     Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
-     *     Statement stmt = conn.createStatement();
-     *     String sql = "SELECT id, name, age FROM users";
-     *     ResultSet rs = stmt.executeQuery(sql);
-     *     
-     *     // Create a new dataModel and add rows from the ResultSet
-     *     dataModel dataModel = new dataModel();
-     *     dataModel.addRow(rs);
-     *     
-     *     // Close resources
-     *     rs.close();
-     *     stmt.close();
-     *     conn.close();
-     * } catch (SQLException se) {
-     *     se.printStackTrace();
-     * }
+     * DataModel dataModel = new DataModel();
+     * MyEntity entity = new MyEntity();
+     * entity.setField1("value1");
+     * entity.setField2(123);
+     * 
+     * // Add the entity's data as a new row at the end of the DataModel
+     * dataModel.addRow(entity);
+     * // The DataModel now contains the entity's data as the last row, 
+     * // with "value1" in the field1 column and 123 in the field2 column.
      * }
      * </pre>
+     *
+     * @param entity An object representing the data to be added as a new row in the DataModel
+     * @return the current instance of DataModel, with the new row added at the end
+     * @throws DataException if the provided object is null, not an entity, or if there's an error during the conversion process
      */
-    public DataModel addRow(ResultSet rs){
-        try {
-            ResultSetMetaData metaData = rs.getMetaData();
-            int columnCount = metaData.getColumnCount();
-    
-            while (rs.next()) {
-                HashMap<String, Object> row = new HashMap<>();
-                for (int i = 1; i <= columnCount; i++) {
-                    row.put(metaData.getColumnName(i), rs.getObject(i));
-                }
-                addRow(row);
-            }
-        } catch (Exception e) {
-            throw new DataException(e.toString());
-        }
-        return this;
+    public DataModel addRow(Object entity){
+        return addRow(rows.size(), entity);
     }
 
     /**
-     * Adds a new row or multiple rows to the DataModel from a {@link JsonNode}. This method can handle both
-     * single JSON objects and arrays of JSON objects. Each JSON object is converted into a DataModel row.
-     * The conversion process utilizes {@link DataConverter#getConvertJsonValueNodeToDataModelRowValue(JsonNode)}
-     * for appropriate value formatting, allowing for customization of the conversion logic.
-     *
-     * <p>Process:</p>
-     * <ul>
-     *     <li>If the JsonNode is an object, it is directly converted to a DataModel row using {@link #parseJsonObjectToDataModel(JsonNode)}.</li>
-     *     <li>If the JsonNode is an array, each element is converted to a separate DataModel row.</li>
-     *     <li>Uses a customized {@link DataConverter} for converting JSON values to DataModel row values, enabling user-defined conversion strategies.</li>
-     * </ul>
-     *
-     * <p>This method is essential for creating a DataModel from JSON data, particularly when the JSON structure is dynamic or complex.</p>
-     *
-     * <p><b>Example:</b></p>
-     * <pre>
-     * DataModel dataModel = new DataModel();
-     * String json = "{ 'column1': 'value1', 'column2': 100 }";
-     * JsonNode jsonNode = new ObjectMapper().readTree(json);
-     * dataModel.addRow(jsonNode);
-     * // The DataModel now contains a row with 'value1' in 'column1' and 100 in 'column2'.
-     * </pre>
-     *
-     * @param node a {@link JsonNode} representing either a single row (as a JSON object) or multiple rows (as a JSON array)
-     * @return the current instance of DataModel, with the new row(s) added
-     */
-    public DataModel addRow(JsonNode node) {
-        if (node.isObject()) {
-            addRow(parseJsonObjectToDataModel(node));
-        } 
-        else if (node.isArray()) {
-            for (JsonNode elementNode : node) {
-                addRow(parseJsonObjectToDataModel(elementNode));
-            }
-        }
-        return this;
-    }
-        
-    /**
-     * Adds a new row to the DataModel using an entity object. The entity is first converted to a Map representation,
+     * Adds a new row to the DataModel at the specified index using an entity object. The entity is first converted to a Map representation,
      * with each field of the entity corresponding to a column in the DataModel. This conversion process utilizes
      * a customized {@link ObjectMapper} obtained from {@link DataConverter} getObjectMapperForConvertEntitiesToDataModel(),
      * allowing for user-defined data conversion strategies.
@@ -1119,11 +1299,11 @@ public final class DataModel implements Cloneable{
      *     <li>Validates that the provided entity is not null.</li>
      *     <li>Converts the entity to a Map using {@link #getConvertedEntitiesToMaps(List)}, which handles the conversion
      *         of each entity field to the corresponding DataModel column value.</li>
-     *     <li>Adds the converted Map as a new row to the DataModel.</li>
+     *     <li>Adds the converted Map as a new row at the specified index in the DataModel.</li>
      * </ul>
      *
-     * <p>This method is ideal for adding rows to the DataModel where the data source is an entity object. It ensures
-     * that the entity's data is accurately represented within the DataModel's tabular structure.</p>
+     * <p>This method is ideal for adding rows to the DataModel at a specific index when the data source is an entity object.
+     * It ensures that the entity's data is accurately represented within the DataModel's tabular structure at the desired position.</p>
      *
      * <p><b>Example:</b></p>
      * <pre>
@@ -1131,15 +1311,18 @@ public final class DataModel implements Cloneable{
      * MyEntity entity = new MyEntity();
      * entity.setField1("value1");
      * entity.setField2(123);
-     * dataModel.addRow(entity);
-     * // The DataModel now contains a row with "value1" in the field1 column and 123 in the field2 column.
+     * int index = 1;
+     * dataModel.addRow(index, entity);
+     * // The DataModel now contains the entity's data as a row at the specified index, 
+     * // with "value1" in the field1 column and 123 in the field2 column.
      * </pre>
      *
+     * @param rowIndex The index at which the new row should be inserted.
      * @param entity An object representing the data to be added as a new row in the DataModel
-     * @return the current instance of DataModel, with the new row added
+     * @return the current instance of DataModel, with the new row added at the specified index
      * @throws DataException if the provided object is null, not an entity, or if there's an error during the conversion process
      */
-    public DataModel addRow(Object entity){
+    public DataModel addRow(int rowIndex, Object entity){
         if(entity == null) {
             throw new DataException("You can not insert null.");
         }
@@ -1147,7 +1330,7 @@ public final class DataModel implements Cloneable{
         entities.add(entity);
 
         List<Map<String, Object>> map = getConvertedEntitiesToMaps(entities);
-        return addRow(map.get(0));
+        return addRow(rowIndex, map.get(0));
     }
 
     /**
@@ -1203,6 +1386,94 @@ public final class DataModel implements Cloneable{
         return this;
     }
 
+    /**
+     * Adds a new row or multiple rows to the DataModel from a {@link JsonNode}. This method can handle both
+     * single JSON objects and arrays of JSON objects. Each JSON object is converted into a DataModel row.
+     * The conversion process utilizes {@link DataConverter#getConvertJsonValueNodeToDataModelRowValue(JsonNode)}
+     * for appropriate value formatting, allowing for customization of the conversion logic.
+     *
+     * <p>Process:</p>
+     * <ul>
+     *     <li>If the JsonNode is an object, it is directly converted to a DataModel row using {@link #parseJsonObjectToDataModel(JsonNode)}.</li>
+     *     <li>If the JsonNode is an array, each element is converted to a separate DataModel row.</li>
+     *     <li>Uses a customized {@link DataConverter} for converting JSON values to DataModel row values, enabling user-defined conversion strategies.</li>
+     * </ul>
+     *
+     * <p>This method is essential for creating a DataModel from JSON data, particularly when the JSON structure is dynamic or complex.</p>
+     *
+     * <p><b>Example:</b></p>
+     * <pre>
+     * DataModel dataModel = new DataModel();
+     * String json = "{ 'column1': 'value1', 'column2': 100 }";
+     * JsonNode jsonNode = new ObjectMapper().readTree(json);
+     * dataModel.addRow(jsonNode);
+     * // The DataModel now contains a row with 'value1' in 'column1' and 100 in 'column2'.
+     * </pre>
+     *
+     * @param node a {@link JsonNode} representing either a single row (as a JSON object) or multiple rows (as a JSON array)
+     * @return the current instance of DataModel, with the new row(s) added
+     */
+    public DataModel addRows(JsonNode node) {
+        if (node.isObject()) {
+            addRow(parseJsonObjectToDataModel(node));
+        } 
+        else if (node.isArray()) {
+            for (JsonNode elementNode : node) {
+                addRow(parseJsonObjectToDataModel(elementNode));
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Adds rows of data to this dataModel instance based on the data found in the provided {@code ResultSet}.
+     * 
+     * <p>This method fetches data from the ResultSet, which typically contains the result of a SQL query executed using JDBC, and transforms this data into rows in the dataModel format.</p>
+     * 
+     * @param rs A ResultSet instance containing data from a database query.
+     * @return The current dataModel instance with the added rows.
+     *
+     * <p><b>Example:</b></p>
+     * <pre>
+     * {@code
+     * try {
+     *     Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+     *     Statement stmt = conn.createStatement();
+     *     String sql = "SELECT id, name, age FROM users";
+     *     ResultSet rs = stmt.executeQuery(sql);
+     *     
+     *     // Create a new dataModel and add rows from the ResultSet
+     *     dataModel dataModel = new dataModel();
+     *     dataModel.addRow(rs);
+     *     
+     *     // Close resources
+     *     rs.close();
+     *     stmt.close();
+     *     conn.close();
+     * } catch (SQLException se) {
+     *     se.printStackTrace();
+     * }
+     * }
+     * </pre>
+     */
+    public DataModel addRows(ResultSet rs){
+        try {
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+    
+            while (rs.next()) {
+                HashMap<String, Object> row = new HashMap<>();
+                for (int i = 1; i <= columnCount; i++) {
+                    row.put(metaData.getColumnName(i), rs.getObject(i));
+                }
+                addRow(row);
+            }
+        } catch (Exception e) {
+            throw new DataException(e.toString());
+        }
+        return this;
+    }
+    
     /**
      * Adds multiple rows of data to this dataModel instance based on the provided list of query results and corresponding column names.
      * 

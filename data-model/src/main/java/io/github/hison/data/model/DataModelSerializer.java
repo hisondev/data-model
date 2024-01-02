@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 
+/**
+ * @author Hani son
+ * @version 1.0.4
+ */
 public class DataModelSerializer extends JsonSerializer<DataModel> {
 
     @Override

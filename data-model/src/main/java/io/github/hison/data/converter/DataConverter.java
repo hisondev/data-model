@@ -9,6 +9,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import io.github.hison.data.model.DataModel;
 
+/**
+ * @author Hani son
+ * @version 1.0.4
+ */
 public interface DataConverter{
     boolean isEntity(Object obj);
 

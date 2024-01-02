@@ -7,9 +7,9 @@ package io.github.hison.data.exception;
  * 
  * <p>This exception can be used to wrap other exceptions, providing a higher-level explanation
  * of what went wrong during data operations.</p>
- * 
+ *
  * @author Hani son
- * @version 1.0.0
+ * @version 1.0.4
  */
 public class DataException extends RuntimeException {
     /**

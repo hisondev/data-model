@@ -35,7 +35,7 @@ import io.github.hison.data.model.DataModel;
  * </ul>
  * 
  * @author Hani son
- * @version 1.0.0
+ * @version 1.0.4
  */
 @JsonDeserialize(using = DataWrapperDeserializer.class)
 @JsonSerialize(using = DataWrapperSerializer.class)

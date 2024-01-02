@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * @author Hani son
+ * @version 1.0.4
+ */
 public class LocalDateTimeSerializer extends JsonSerializer<LocalDateTime> {
     private DateTimeFormatter formatter;
 

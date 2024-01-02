@@ -10,6 +10,10 @@ import io.github.hison.data.model.DataModel;
 
 import java.io.IOException;
 
+/**
+ * @author Hani son
+ * @version 1.0.4
+ */
 public class DataWrapperDeserializer extends JsonDeserializer<DataWrapper> {
 
     @Override

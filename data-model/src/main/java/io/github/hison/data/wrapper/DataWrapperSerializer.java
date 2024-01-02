@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 
+/**
+ * @author Hani son
+ * @version 1.0.4
+ */
 public class DataWrapperSerializer extends JsonSerializer<DataWrapper> {
 
     @Override

@@ -1,7 +1,6 @@
 package io.github.hison.data.condition;
 
 import java.util.HashMap;
-
 import io.github.hison.data.model.DataModel;
 
 /**
@@ -18,7 +17,7 @@ import io.github.hison.data.model.DataModel;
  * </pre>
  * 
  * @author Hani son
- * @version 1.0.0
+ * @version 1.0.4
  */
 public class Condition extends HashMap<String, Object> {
     /**
