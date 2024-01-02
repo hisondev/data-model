@@ -347,12 +347,12 @@ public final class DataModel implements Cloneable{
     /**
      * Constructs a new DataModel instance initialized with data from a {@link JsonNode}. This constructor 
      * can handle both single JSON objects and arrays of JSON objects, converting them into one or more rows 
-     * of the DataModel. It leverages the {@link #addRow(JsonNode)} method for the conversion and addition of rows.
+     * of the DataModel. It leverages the addRow(JsonNode) method for the conversion and addition of rows.
      *
      * <p>Process:</p>
      * <ul>
      *     <li>Initializes the columns (cols) as a {@link LinkedHashSet} and rows as an {@link ArrayList} of {@link HashMap}s.</li>
-     *     <li>Uses the {@link #addRow(JsonNode)} method to convert the provided JsonNode into DataModel rows.</li>
+     *     <li>Uses the addRow(JsonNode) method to convert the provided JsonNode into DataModel rows.</li>
      *     <li>Handles both single JSON objects and JSON arrays, adding each as individual rows to the DataModel.</li>
      * </ul>
      *
