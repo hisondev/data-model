@@ -6,7 +6,7 @@
 
   <groupId>io.github.hisondev</groupId>
   <artifactId>data-model</artifactId>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
 
   <name>Data Model</name>
   <description>A library designed to simplify data communication in Spring applications. Primarily featuring the DataWrapper and DataModel classes to streamline the process of data transfer and management.</description>
@@ -65,6 +65,7 @@
   </dependencyManagement>
 
   <dependencies>
+      <!-- For HttpSession -->
       <dependency>
           <groupId>javax.servlet</groupId>
           <artifactId>javax.servlet-api</artifactId>
@@ -78,10 +79,11 @@
           <scope>provided</scope>
       </dependency>
 
+      <!-- For Tuple -->
       <dependency>
-          <groupId>javax.persistence</groupId>
-          <artifactId>javax.persistence-api</artifactId>
-          <scope>provided</scope>
+          <groupId>jakarta.persistence</groupId>
+          <artifactId>jakarta.persistence-api</artifactId>
+          <version>3.1.0</version>
       </dependency>
   </dependencies>
 

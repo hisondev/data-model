@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * @author Hani son
- * @version 1.0.4
+ * @version 1.0.5
  */
 public class LocalDateTimeSerializer extends JsonSerializer<LocalDateTime> {
     private DateTimeFormatter formatter;

@@ -11,7 +11,7 @@ import io.github.hison.data.model.DataModel;
 
 /**
  * @author Hani son
- * @version 1.0.4
+ * @version 1.0.5
  */
 public interface DataConverter{
     boolean isEntity(Object obj);

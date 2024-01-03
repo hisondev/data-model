@@ -17,8 +17,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import javax.persistence.Tuple;
-import javax.persistence.TupleElement;
 import javax.servlet.http.HttpSession;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -32,6 +30,8 @@ import io.github.hison.data.condition.Condition;
 import io.github.hison.data.converter.DataConverter;
 import io.github.hison.data.converter.DataConverterFactory;
 import io.github.hison.data.exception.DataException;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.TupleElement;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -104,7 +104,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * </ul>
  *
  * @author Hani son
- * @version 1.0.4
+ * @version 1.0.5
  */
 @JsonDeserialize(using = DataModelDeserializer.class)
 @JsonSerialize(using = DataModelSerializer.class)

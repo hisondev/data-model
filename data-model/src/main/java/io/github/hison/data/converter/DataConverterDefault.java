@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.Entity;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -22,6 +21,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import io.github.hison.data.exception.DataException;
 import io.github.hison.data.model.DataModel;
+import jakarta.persistence.Entity;
 
 /**
  * Default implementation of the {@link DataConverter} interface, providing standard methods for 
@@ -63,7 +63,7 @@ import io.github.hison.data.model.DataModel;
  * enhancing the adaptability of the DataModel to various data processing scenarios.
  * 
  * @author Hani son
- * @version 1.0.4
+ * @version 1.0.5
  */
 public class DataConverterDefault implements DataConverter{
     /**

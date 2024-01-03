@@ -8,7 +8,7 @@ import java.io.IOException;
 
 /**
  * @author Hani son
- * @version 1.0.4
+ * @version 1.0.5
  */
 public class DataModelSerializer extends JsonSerializer<DataModel> {
 
