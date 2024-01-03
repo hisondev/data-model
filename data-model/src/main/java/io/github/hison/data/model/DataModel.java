@@ -30,8 +30,6 @@ import io.github.hison.data.condition.Condition;
 import io.github.hison.data.converter.DataConverter;
 import io.github.hison.data.converter.DataConverterFactory;
 import io.github.hison.data.exception.DataException;
-import jakarta.persistence.Tuple;
-import jakarta.persistence.TupleElement;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -177,9 +175,6 @@ public final class DataModel implements Cloneable{
         ObjectMapper mapper = getConverter().getObjectMapperForConvertEntitiesToDataModel();
     
         for (Object entity : entities) {
-            if (!getConverter().isEntity(entity)) {
-                throw new DataException("The provided object is not an entity.");
-            }
             try {
                 String json = mapper.writeValueAsString(entity);
                 HashMap<String, Object> map = mapper.readValue(json, new TypeReference<HashMap<String, Object>>() {});
@@ -259,25 +254,6 @@ public final class DataModel implements Cloneable{
         this.rows = new ArrayList<HashMap<String, Object>>();
 
         addRow(newRow);
-    }
-
-    /**
-     * Initializes a new DataModel using a single {@link Tuple}.
-     * 
-     * <p>The provided {@link Tuple} is traversed, and each of its elements is added
-     * as a key-value pair in a new row {@link HashMap}.</p>
-     * 
-     * <p>This constructor facilitates direct conversion of a {@link Tuple} resulting
-     * from a query into a structured {@link DataModel} without necessitating 
-     * manual conversion or entity instantiation.</p>
-     * 
-     * @param tuple the {@link Tuple} containing the data to initialize the DataModel.
-     */
-    public DataModel(Tuple tuple) {
-        this.cols = new LinkedHashSet<String>();
-        this.rows = new ArrayList<HashMap<String, Object>>();
-        
-        addRow(tuple);
     }
 
     /**
@@ -431,9 +407,6 @@ public final class DataModel implements Cloneable{
                 setColumns((List<String>) newRows);
             } else if (t instanceof Map) {
                 addRows((List<Map<String, Object>>) newRows);
-            } else if (t instanceof Tuple) {
-                addRows((List<Tuple>) newRows);
-                
             } else if (t instanceof Object){
                 addRows((List<Object>) newRows);
             }
@@ -1022,92 +995,6 @@ public final class DataModel implements Cloneable{
     
         return this;
     }
-
-    /**
-     * Adds a new row of data to the end of this DataModel instance based on the provided Tuple.
-     * 
-     * <p>This method delegates the addition of a new row to {@link #addRow(int, Tuple)}, using the current size
-     * of the rows as the index. It extracts elements from the {@code Tuple} and maps them into a row, using the
-     * aliases of the Tuple elements as column names. If the {@code Tuple} is null, the method will
-     * simply return without adding any row.</p>
-     * 
-     * <p>If an element of the Tuple does not have an alias, the method will not add a row and return the current instance.</p>
-     * 
-     * @param tuple A Tuple containing data to be added as a new row.
-     *              Each TupleElement's alias will be used as the column name for that data.
-     * @return The current DataModel instance with the added row at the end.
-     *
-     * <p><b>Example:</b></p>
-     * <pre>
-     * {@code
-     * // Using JPA's EntityManager
-     * EntityManager em = ... // Obtain an EntityManager instance.
-     *
-     * // Example JPQL query
-     * Query query = em.createQuery("SELECT name AS nameAlias, age AS ageAlias FROM Person", Tuple.class);
-     * List<Tuple> results = query.getResultList();
-     * 
-     * // Create a new DataModel and add each tuple as a row at the end
-     * DataModel dataModel = new DataModel();
-     * for (Tuple tuple : results) {
-     *     dataModel.addRow(tuple);
-     * }
-     * }
-     * </pre>
-     */
-    public DataModel addRow(Tuple tuple) {
-        return addRow(rows.size(), tuple);
-    }
-
-    /**
-     * Adds a new row of data at the specified index in this DataModel instance based on the provided Tuple.
-     * 
-     * <p>This method extracts elements from the {@code Tuple} and maps them into a row, using the
-     * aliases of the Tuple elements as column names. If the {@code Tuple} is null, the method will
-     * simply return without adding any row.</p>
-     * 
-     * <p>If an element of the Tuple does not have an alias, a DataException is thrown, prompting
-     * to specify an alias in the query.</p>
-     * 
-     * @param rowIndex The index at which the new row should be inserted.
-     * @param tuple A Tuple containing data to be added as a new row. 
-     *              Each TupleElement's alias will be used as the column name for that data.
-     * @return The current DataModel instance with the added row at the specified index.
-     * @throws DataException if an element of the Tuple does not have an alias
-     *
-     * <p><b>Example:</b></p>
-     * <pre>
-     * {@code
-     * // Using JPA's EntityManager
-     * EntityManager em = ... // Obtain an EntityManager instance.
-     *
-     * // Example JPQL query
-     * Query query = em.createQuery("SELECT name AS nameAlias, age AS ageAlias FROM Person", Tuple.class);
-     * List<Tuple> results = query.getResultList();
-     * 
-     * // Create a new DataModel and add each tuple as a row at a specified index
-     * DataModel dataModel = new DataModel();
-     * int index = 0;
-     * for (Tuple tuple : results) {
-     *     dataModel.addRow(index, tuple);
-     *     index++;
-     * }
-     * }
-     * </pre>
-     */
-    public DataModel addRow(int rowIndex, Tuple tuple) {
-        if (tuple != null) {
-            HashMap<String, Object> row = new HashMap<>();
-            for (TupleElement<?> element : tuple.getElements()) {
-                if(element.getAlias() == null) {
-                    throw new DataException("Please specify an alias in your query.");
-                }
-                row.put(element.getAlias(), tuple.get(element.getAlias()));
-            }
-            addRow(rowIndex, row);
-        }
-        return this;
-    }
     
     /**
      * Adds a new row of data to the end of this DataModel instance based on the provided array of objects and the array of column names.
@@ -1372,12 +1259,7 @@ public final class DataModel implements Cloneable{
                 for (T hm : newRows) {
                     addRow((Map<String, Object>) hm);
                 }
-            } else if (first instanceof Tuple) {
-                for (T tupleItem : newRows) {
-                    Tuple tuple = (Tuple) tupleItem;
-                    addRow(tuple);
-                }
-            } else if (first instanceof Object){
+            }else if (first instanceof Object){
                 List<Map<String, Object>> maps = getConvertedEntitiesToMaps((List<Object>) newRows);
                 addRows(maps);
             }

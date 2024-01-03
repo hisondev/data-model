@@ -14,8 +14,6 @@ import io.github.hison.data.model.DataModel;
  * @version 1.0.5
  */
 public interface DataConverter{
-    boolean isEntity(Object obj);
-
     String getConvertJsonValueNodeToDataModelRowValue(JsonNode valueNode);
 
     JsonNode getConvertedJson(DataModel dm);

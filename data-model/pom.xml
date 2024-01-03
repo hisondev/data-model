@@ -78,13 +78,6 @@
           <artifactId>jackson-databind</artifactId>
           <scope>provided</scope>
       </dependency>
-
-      <!-- For Tuple -->
-      <dependency>
-          <groupId>jakarta.persistence</groupId>
-          <artifactId>jakarta.persistence-api</artifactId>
-          <version>3.1.0</version>
-      </dependency>
   </dependencies>
 
   <build>

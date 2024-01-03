@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import io.github.hison.data.exception.DataException;
 import io.github.hison.data.model.DataModel;
-import jakarta.persistence.Entity;
 
 /**
  * Default implementation of the {@link DataConverter} interface, providing standard methods for 
@@ -66,24 +65,6 @@ import jakarta.persistence.Entity;
  * @version 1.0.5
  */
 public class DataConverterDefault implements DataConverter{
-    /**
-     * Determines whether the given object is an entity by checking for the presence of the {@link Entity} annotation.
-     * This method is used in the context of the DataModel to verify if an object conforms to the entity structure
-     * expected within the data conversion process.
-     *
-     * <p>Usage:</p>
-     * This method is typically invoked before converting an object to a DataModel row, ensuring that the object
-     * is a valid entity. It is an integral part of the validation process in methods like 
-     * {@link DataModel} getConvertedEntitiesToMaps(List) to ascertain that only entities are processed for conversion.
-     *
-     * @param obj the object to be checked for entity status
-     * @return true if the object is an entity (i.e., annotated with {@link Entity}), false otherwise
-     */
-    @Override
-    public boolean isEntity(Object obj) {
-        return obj != null && obj.getClass().isAnnotationPresent(Entity.class);
-    }
-
     /**
      * Converts a JsonNode value to a string representation suitable for a DataModel row. 
      * This method specifically handles date-time values formatted in ISO-8601 format 
