@@ -864,7 +864,7 @@ public final class DataModel implements Cloneable{
     public DataModel addRow(int rowIndex) {
         checkAddRowsRange(rowIndex);
 
-        if (rows.isEmpty() && cols.isEmpty()) {
+        if (cols.isEmpty()) {
             throw new DataException("Please add columns first.");
         }
 
