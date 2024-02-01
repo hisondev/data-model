@@ -1,4 +1,4 @@
-package io.github.hison.data.model;
+package com.example.demo.common.data.model;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -26,10 +26,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.node.NullNode;
 
-import io.github.hison.data.condition.Condition;
-import io.github.hison.data.converter.DataConverter;
-import io.github.hison.data.converter.DataConverterFactory;
-import io.github.hison.data.exception.DataException;
+import com.example.demo.common.data.condition.Condition;
+import com.example.demo.common.data.converter.DataConverter;
+import com.example.demo.common.data.converter.DataConverterFactory;
+import com.example.demo.common.data.exception.DataException;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -109,6 +109,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public final class DataModel implements Cloneable{
     private LinkedHashSet<String> cols;
     private ArrayList<HashMap<String, Object>> rows;
+    private boolean freeze = false;
+    private boolean freezeValues = false;
     
     private DataConverter getConverter() {
         return DataConverterFactory.getConverter();
@@ -199,6 +201,16 @@ public final class DataModel implements Cloneable{
         this.rows = new ArrayList<HashMap<String, Object>>();
     }
 
+    /**
+     * I've created a constructor to prevent errors, but shouldn't you add more than one column?
+     */
+    public DataModel(String newColumn) {
+        this.cols = new LinkedHashSet<String>();
+        this.rows = new ArrayList<HashMap<String, Object>>();
+
+        this.cols.add(newColumn);
+    }
+    
     /**
      * Constructor for the dataModel class with variable column names.
      *
@@ -520,8 +532,12 @@ public final class DataModel implements Cloneable{
      * After invoking this method, the DataModel will be empty.</p>
      *
      * @return the <code>dataModel</code> instance with cleared columns and rows.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel clear() {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         cols.clear();
         rows.clear();
 
@@ -575,8 +591,12 @@ public final class DataModel implements Cloneable{
      * 
      * @param dataModel the <code>dataModel</code> instance from which rows will be extracted and added to the current instance.
      * @return the <code>dataModel</code> instance (i.e., the current instance) after inserting the new rows.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel insert(DataModel dataModel){
+        if(freeze) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         List<HashMap<String, Object>> newRows = dataModel.getRows();
         return addRows(newRows);
     }
@@ -667,10 +687,14 @@ public final class DataModel implements Cloneable{
      * @param columns Varargs of column names to be set for this dataModel instance.
      * @return The current dataModel instance with the columns set.
      * @throws DataException If columns have already been defined for this instance.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel setColumns(String... columns) {
         if(isDefine()) {
             throw new DataException("The column has already been defined.");
+        }
+        if(freeze) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
         }
         for(String column : columns) {
             cols.add(column);
@@ -692,10 +716,14 @@ public final class DataModel implements Cloneable{
      * @param columns A set of column names to be set for this dataModel instance.
      * @return The current dataModel instance with the columns set.
      * @throws DataException If columns have already been defined for this instance.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel setColumns(Set<String> columns) {
         if(isDefine()) {
             throw new DataException("The column has already been defined.");
+        }
+        if(freeze) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
         }
         for(String column : columns) {
             cols.add(column);
@@ -717,10 +745,14 @@ public final class DataModel implements Cloneable{
      * @param columns A list of column names to be set for this dataModel instance.
      * @return The current dataModel instance with the columns set.
      * @throws DataException If columns have already been defined for this instance.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel setColumns(List<String> columns) {
         if(isDefine()) {
             throw new DataException("The column has already been defined.");
+        }
+        if(freeze) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
         }
         for(String column : columns) {
             cols.add(column);
@@ -752,10 +784,13 @@ public final class DataModel implements Cloneable{
      * @param column The name of the column for which the value is to be uniformly set.
      * @param value The value to be set across all rows for the specified column.
      * @return The current dataModel instance with updated values for the specified column.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel setColumnSameValue(String column, Object value) {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         if(!hasColumn(column)) return this;
-
         for (HashMap<String, Object> map : rows) {
             map.put(column, value);
         }
@@ -792,10 +827,14 @@ public final class DataModel implements Cloneable{
      * @param formatter The function to format values within the specified column.
      * @return The current DataModel instance with formatted values in the specified column.
      * @throws DataException If the column does not exist or an error occurs during formatting.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel setColumnSameFormat(String column, Function<Object, Object> formatter) {
         if (!cols.contains(column)) {
             throw new DataException("Column does not exist: " + column);
+        }
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
         }
 
         for (HashMap<String, Object> row : rows) {
@@ -860,12 +899,16 @@ public final class DataModel implements Cloneable{
      * @param rowIndex the index at which the new row should be inserted
      * @return the current instance of DataModel, with the new row added at the specified index
      * @throws DataException if both rows and columns are empty, or if the rowIndex is out of the valid range
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel addRow(int rowIndex) {
         checkAddRowsRange(rowIndex);
-
+        
         if (cols.isEmpty()) {
             throw new DataException("Please add columns first.");
+        }
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
         }
 
         HashMap<String, Object> newRow = new HashMap<>();
@@ -954,6 +997,7 @@ public final class DataModel implements Cloneable{
      * @param rowIndex the index at which the new row should be inserted
      * @param newRow a map representing the new row to be added, where keys are column names and values are the corresponding data
      * @return the current instance of DataModel, with the new row inserted at the specified index
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      * @throws DataException if a column in newRow does not exist in DataModel, if there's a type mismatch in any column,
      *                       or if the rowIndex is out of the valid range
      */
@@ -962,6 +1006,9 @@ public final class DataModel implements Cloneable{
     
         if (cols.isEmpty()) {
             cols.addAll(newRow.keySet());
+        }
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
         }
 
         /*
@@ -1043,6 +1090,7 @@ public final class DataModel implements Cloneable{
      * @param queryResult An array of objects containing data to be added as a new row.
      * @param columnNames An array of strings where each string represents the column name for the respective data in {@code queryResult}.
      * @return The current DataModel instance with the added row at the specified index.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      * @throws DataException if there is a mismatch between the lengths of {@code queryResult} and {@code columnNames}, or if either is null.
      * 
      * <p><b>Notice:</b> The length of the <code>columnNames</code> array should match the number 
@@ -1065,6 +1113,9 @@ public final class DataModel implements Cloneable{
      * </pre>
      */
     public DataModel addRow(int rowIndex, Object[] queryResult, String[] columnNames) {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         if (queryResult != null && columnNames != null && queryResult.length == columnNames.length) {
             HashMap<String, Object> row = new HashMap<>();
             for (int i = 0; i < columnNames.length; i++) {
@@ -1249,9 +1300,14 @@ public final class DataModel implements Cloneable{
      * @param newRows a list of entities, maps, or tuples representing the rows to be added
      * @return the current instance of DataModel, with the new rows added
      * @throws DataException if any error occurs during the conversion or addition process
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     @SuppressWarnings("unchecked")
     public <T> DataModel addRows(List<T> newRows) {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
+
         if (newRows != null && !newRows.isEmpty() && newRows.get(0) != null) {
             Object first = newRows.get(0);
             
@@ -1294,8 +1350,12 @@ public final class DataModel implements Cloneable{
      *
      * @param node a {@link JsonNode} representing either a single row (as a JSON object) or multiple rows (as a JSON array)
      * @return the current instance of DataModel, with the new row(s) added
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel addRows(JsonNode node) {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         if (node.isObject()) {
             addRow(parseJsonObjectToDataModel(node));
         } 
@@ -1314,6 +1374,7 @@ public final class DataModel implements Cloneable{
      * 
      * @param rs A ResultSet instance containing data from a database query.
      * @return The current dataModel instance with the added rows.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      *
      * <p><b>Example:</b></p>
      * <pre>
@@ -1339,6 +1400,9 @@ public final class DataModel implements Cloneable{
      * </pre>
      */
     public DataModel addRows(ResultSet rs){
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         try {
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
@@ -1382,8 +1446,12 @@ public final class DataModel implements Cloneable{
      * @param queryResults A list of object arrays, each representing a row of data fetched from the database.
      * @param columnNames An array of strings representing the names of the columns for the fetched data.
      * @return The current dataModel instance with the added rows.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel addRows(List<Object[]> queryResults, String[] columnNames) {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         for(Object[] result : queryResults) {
             addRow(result, columnNames);
         }
@@ -1646,11 +1714,15 @@ public final class DataModel implements Cloneable{
      * @param value the new value to set in the specified cell
      * @return the current instance of DataModel, with the updated value in the specified cell
      * @throws DataException if the column does not exist or if there's a type mismatch in the column
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel setValue(int rowIndex, String column, Object value) {
         checkRowsRange(rowIndex);
         if (!hasColumn(column)) {
             throw new DataException("Column does not exist.");
+        }
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
         }
 
         value = getConverter().getConvertValueToDataModelRowValue(value);
@@ -1693,8 +1765,12 @@ public final class DataModel implements Cloneable{
      * @param rowIndex The index of the row (0-based) to be removed.
      * @return The HashMap representing the removed row.
      * @throws DataException if the rowIndex is out of range or rows are empty.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public HashMap<String, Object> removeRow(int rowIndex) {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         checkRowsRange(rowIndex);
         return rows.remove(rowIndex);
     }
@@ -1717,10 +1793,14 @@ public final class DataModel implements Cloneable{
      * @param column The name of the column to be removed.
      * @return The current dataModel instance with the column removed.
      * @throws DataException if the specified column does not exist in the DataModel.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel removeColumn(String column) {
         if (!hasColumn(column)) {
             throw new DataException("Column does not exist.");
+        }
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
         }
         cols.remove(column);
         for (HashMap<String, Object> row : rows) {
@@ -1746,9 +1826,13 @@ public final class DataModel implements Cloneable{
      *
      * @param columns The names of the columns to be removed.
      * @return The current dataModel instance with the specified columns removed.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
      */
     public DataModel removeColumns(String... columns) {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         for (String column : columns) {
             if (!hasColumn(column)) {
                 throw new DataException("Column does not exist.");
@@ -1770,9 +1854,13 @@ public final class DataModel implements Cloneable{
      *
      * @param columns The list of column names to be removed.
      * @return The current dataModel instance with the specified columns removed.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
      */
     public DataModel removeColumns(List<String> columns) {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         for (String column : columns) {
             if (!hasColumn(column)) {
                 throw new DataException("Column does not exist.");
@@ -1795,8 +1883,12 @@ public final class DataModel implements Cloneable{
      * @param columns The set of column names to be removed.
      * @return The current dataModel instance with the specified columns removed.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel removeColumns(Set<String> columns) {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         for (String column : columns) {
             if (!hasColumn(column)) {
                 throw new DataException("Column does not exist.");
@@ -1853,8 +1945,12 @@ public final class DataModel implements Cloneable{
      * @param columns The set of column names to be retained.
      * @return The current dataModel instance retaining only the specified columns.
      * @throws DataException if any of the specified columns do not exist in the DataModel.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel setValidColumns(Set<String> columns) {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         for (String column : columns) {
             if (!hasColumn(column)) {
                 throw new DataException("Column " + column + " does not exist.");
@@ -2444,9 +2540,13 @@ public final class DataModel implements Cloneable{
      * @param bool If {@code true}, retain rows that match all conditions. If {@code false}, retain rows that do not match any of the conditions.
      * @param conditions Varargs of conditions to be used for filtering rows.
      * @return The modified {@link DataModel} containing rows based on the conditions and the value of {@code bool}.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      * @throws DataException if a column from the conditions does not exist in the DataModel.
      */
     public DataModel searchAndModify(Boolean bool, Condition... conditions) {
+        if(freezeValues) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         List<HashMap<String, Object>> matchedRows = new ArrayList<>();
         HashMap<String, Object> row;
         boolean matchesAll;
@@ -2603,8 +2703,12 @@ public final class DataModel implements Cloneable{
      * <p><b>Note:</b> This operation modifies the original DataModel's column order.</p>
      *
      * @return The modified {@link DataModel} with columns sorted in ascending order.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel sortColumnAscending() {
+        if(freeze) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         List<String> list = new ArrayList<>(cols);
         Collections.sort(list);
         cols.clear();
@@ -2624,8 +2728,12 @@ public final class DataModel implements Cloneable{
      * <p><b>Note:</b> This operation modifies the original DataModel's column order.</p>
      *
      * @return The modified {@link DataModel} with columns sorted in descending order.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel sortColumnDescending() {
+        if(freeze) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         List<String> list = new ArrayList<>(cols);
         Collections.sort(list, Collections.reverseOrder());
         cols.clear();
@@ -2645,8 +2753,12 @@ public final class DataModel implements Cloneable{
      * <p><b>Note:</b> This operation modifies the original DataModel's column order.</p>
      *
      * @return The modified {@link DataModel} with columns in reversed order.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel sortColumnReverse() {
+        if(freeze) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         List<String> list = new ArrayList<>(cols);
         Collections.reverse(list);
         cols.clear();
@@ -2690,9 +2802,13 @@ public final class DataModel implements Cloneable{
      * @param column The column name based on which the rows will be sorted.
      * @param isIntegerOrder If true, attempts to treat string values as numbers for sorting.
      * @return The modified {@link DataModel} with rows sorted in ascending order based on the specified column.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      * @throws DataException If the specified column does not exist, or if mixed or unsupported types are encountered.
      */
     public DataModel sortRowAscending(String column, Boolean isIntegerOrder) {
+        if(freeze) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         if (!hasColumn(column)) {
             throw new DataException("Column " + column + " does not exist.");
         }
@@ -2773,9 +2889,13 @@ public final class DataModel implements Cloneable{
      * @param column The column name based on which the rows will be sorted.
      * @param isIntegerOrder If true, attempts to treat string values as numbers for sorting.
      * @return The modified {@link DataModel} with rows sorted in descending order based on the specified column.
+     * @throws DataException An error occurs if changes cannot be made through setFreeze.
      * @throws DataException If the specified column does not exist, or if mixed or unsupported types are encountered.
      */
     public DataModel sortRowDescending(String column, Boolean isIntegerOrder) {
+        if(freeze) {
+            throw new DataException("This DataModel is frozen and cannot be modified.");
+        }
         if (!hasColumn(column)) {
             throw new DataException("Column " + column + " does not exist.");
         }
@@ -2834,6 +2954,47 @@ public final class DataModel implements Cloneable{
      */
     public DataModel sortRowReverse() {
         Collections.reverse(rows);
+        return this;
+    }
+
+    /**
+     * Checks if the DataModel is in a frozen state.
+     * 
+     * @return {@code true} if the DataModel is frozen and cannot be modified; {@code false} otherwise.
+     */
+    public boolean isFreeze() {
+        return freeze;
+    }
+
+    /**
+     * Checks if the values within the DataModel are frozen.
+     * 
+     * @return {@code true} if the values within the DataModel are frozen and cannot be modified; {@code false} otherwise.
+     */
+    public boolean isFreezeValues() {
+        return freezeValues;
+    }
+
+    /**
+     * Sets the DataModel to a frozen state, preventing any modifications to its structure and content.
+     * Once set, the DataModel cannot be unfrozen and remains immutable.
+     * 
+     * @return The current instance of the DataModel for chaining methods.
+     */
+    public DataModel setFreeze() {
+        freezeValues = true;
+        freeze = true;
+        return this;
+    }
+
+    /**
+     * Sets the values within the DataModel to a frozen state, preventing any modifications to the content.
+     * The structure (like the order and presence of columns and rows) can still be modified.
+     * 
+     * @return The current instance of the DataModel for chaining methods.
+     */
+    public DataModel setFreezeValues() {
+        freezeValues = true;
         return this;
     }
 }
