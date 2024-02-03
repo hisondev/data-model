@@ -1,4 +1,4 @@
-package com.example.demo.common.data.model;
+package io.github.hison.data.model;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -26,10 +26,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.node.NullNode;
 
-import com.example.demo.common.data.condition.Condition;
-import com.example.demo.common.data.converter.DataConverter;
-import com.example.demo.common.data.converter.DataConverterFactory;
-import com.example.demo.common.data.exception.DataException;
+import io.github.hison.data.condition.Condition;
+import io.github.hison.data.converter.DataConverter;
+import io.github.hison.data.converter.DataConverterFactory;
+import io.github.hison.data.exception.DataException;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
