@@ -4,6 +4,8 @@ A library designed to simplify data communication in Spring applications. Primar
 ## Introduction
 The `data-model` library is designed to simplify data communication in Spring applications. It includes the `DataWrapper` and `DataModel` classes, which streamline the process of data transfer and management.
 
+For enhanced and convenient front-end and server communication, this library can be used in conjunction with `dataModel.min.js` from [hison-js](https://github.com/hisondev/hison-js).
+
 ## Getting Started
 To start using the `data-model` library in your project, follow the installation and usage instructions below.
 
