@@ -202,7 +202,15 @@ public final class DataModel implements Cloneable{
     }
 
     /**
-     * I've created a constructor to prevent errors, but shouldn't you add more than one column?
+     * Constructor for the DataModel class with a single column name.
+     *
+     * <p>Initializes the columns (cols) with the provided single column name, ensuring order 
+     * of insertion and uniqueness using a {@link LinkedHashSet}. The rows are initialized 
+     * as an {@link ArrayList} of {@link HashMap}, where each HashMap represents a row with 
+     * key-value pairs corresponding to column names and their respective values.</p>
+     *
+     * @param newColumn The name of the single column to be added when creating a new instance 
+     *                  of DataModel.
      */
     public DataModel(String newColumn) {
         this.cols = new LinkedHashSet<String>();
