@@ -155,7 +155,7 @@ public class DataConverterDefault implements DataConverter{
      */
     @Override
     public void serialize(DataModel dataModel, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        ObjectMapper mapper = getObjectMapperForConvertDataModelToJson();
+        ObjectMapper mapper = getObjectMapperForConvertDataModelToJson(); // 그대로 유지
         gen.writeStartArray();
         for (HashMap<String, Object> row : dataModel.getRows()) {
             gen.writeStartObject();
@@ -164,8 +164,11 @@ public class DataConverterDefault implements DataConverter{
                 Object value = entry.getValue();
                 if (value == null) {
                     gen.writeNullField(key);
+                } else if (value instanceof String) {
+                    gen.writeStringField(key, (String) value);
                 } else {
-                    gen.writeStringField(key, mapper.writeValueAsString(value));
+                    gen.writeFieldName(key);
+                    mapper.writeValue(gen, value);
                 }
             }
             gen.writeEndObject();
