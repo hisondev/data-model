@@ -6,7 +6,7 @@
 
   <groupId>io.github.hisondev</groupId>
   <artifactId>data-model</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
 
   <name>Data Model</name>
   <description>A library designed to simplify data communication in Spring applications. Primarily featuring the DataWrapper and DataModel classes to streamline the process of data transfer and management.</description>

@@ -17,7 +17,7 @@ import io.github.hison.data.model.DataModel;
  * </pre>
  * 
  * @author Hani son
- * @version 1.0.5
+ * @version 1.0.7
  */
 public class Condition extends HashMap<String, Object> {
     /**

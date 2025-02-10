@@ -21,7 +21,7 @@ You can add the `data-model` library to your project by including the following 
 <dependency>
     <groupId>io.github.hisondev</groupId>
     <artifactId>data-model</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.7</version>
 </dependency>
 ```
 

@@ -61,7 +61,7 @@ import io.github.hison.data.model.DataModel;
  * enhancing the adaptability of the DataModel to various data processing scenarios.
  * 
  * @author Hani son
- * @version 1.0.5
+ * @version 1.0.7
  */
 public class DataConverterDefault implements DataConverter{
     /**
