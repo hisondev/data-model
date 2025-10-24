@@ -10,7 +10,7 @@
 
   <name>Data Model</name>
   <description>A library designed to simplify data communication in Spring applications. Primarily featuring the DataWrapper and DataModel classes to streamline the process of data transfer and management.</description>
-  <url>https://github.com/hisondev/data-model</url>
+  <url>https://hisondev.github.io/</url>
 
   <licenses>
     <license>
