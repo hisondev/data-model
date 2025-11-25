@@ -22,7 +22,7 @@ public class DataWrapperDeserializer extends JsonDeserializer<DataWrapper> {
 
         if (jp.isExpectedStartObjectToken()) {
             while (jp.nextToken() != JsonToken.END_OBJECT) {
-                String key = jp.getCurrentName();
+                String key = jp.currentName();
                 jp.nextToken();
                 JsonToken currentToken = jp.getCurrentToken();
                 if (currentToken == JsonToken.START_OBJECT || currentToken == JsonToken.START_ARRAY) {

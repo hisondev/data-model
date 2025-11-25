@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import javax.servlet.http.HttpSession;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -30,6 +29,7 @@ import io.github.hison.data.condition.Condition;
 import io.github.hison.data.converter.DataConverter;
 import io.github.hison.data.converter.DataConverterFactory;
 import io.github.hison.data.exception.DataException;
+import jakarta.servlet.http.HttpSession;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -111,6 +111,7 @@ public final class DataModel implements Cloneable{
     private ArrayList<HashMap<String, Object>> rows;
     private boolean freeze = false;
     private boolean freezeValues = false;
+    private boolean strictColumnType = false;
     
     private DataConverter getConverter() {
         return DataConverterFactory.getConverter();
@@ -121,12 +122,12 @@ public final class DataModel implements Cloneable{
         Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
 
         while (fields.hasNext()) {
-            HashMap.Entry<String, JsonNode> field = fields.next();
-            String key = field.getKey();
-            JsonNode valueNode = field.getValue();
+            Map.Entry<String, JsonNode> entry = fields.next();
+            String key = entry.getKey();
+            JsonNode valueNode = entry.getValue();
 
             Object value;
-            if (valueNode.isNull() || valueNode instanceof NullNode) {
+            if (valueNode.isNull()) {
                 value = null;
             } else if (valueNode.isArray()) {
                 value = parseJsonArrayToDataModel(valueNode);
@@ -186,6 +187,54 @@ public final class DataModel implements Cloneable{
             }
         }
         return maps;
+    }
+
+    // ===== Memory Guard fields =====
+    /** Whether memory guard is enabled (default: true). */
+    private boolean memoryGuardEnabled = true;
+
+    /** Allowed maximum payload size in bytes (default: 32MB). */
+    private long maxPayloadBytes = 32L * 1024 * 1024;
+
+    /** Strategy to estimate payload size (transient to avoid serialization). */
+    private transient DataSizeEstimator dataSizeEstimator = new JsonSizeEstimator();
+
+    /** Returns whether the memory guard is currently enabled. */
+    public boolean isMemoryGuardEnabled() { return memoryGuardEnabled; }
+
+    /** Enables or disables the memory guard (default: true). */
+    public DataModel setMemoryGuardEnabled(boolean enabled) {
+        this.memoryGuardEnabled = enabled;
+        return this;
+    }
+
+    /** Returns the maximum allowed payload size in bytes. */
+    public long getMaxPayloadBytes() { return maxPayloadBytes; }
+
+    /** Sets the maximum allowed payload size in bytes (must be > 0). */
+    public DataModel setMaxPayloadBytes(long bytes) {
+        if (bytes <= 0) throw new DataException("maxPayloadBytes must be > 0");
+        this.maxPayloadBytes = bytes;
+        return this;
+    }
+
+    /** Sets the size estimator strategy (must not be null). */
+    public DataModel setDataSizeEstimator(DataSizeEstimator estimator) {
+        if (estimator == null) throw new DataException("DataSizeEstimator must not be null");
+        this.dataSizeEstimator = estimator;
+        return this;
+    }
+
+    /** Enforces the memory budget; throws DataException if the estimated payload exceeds the limit. */
+    private void enforceMemoryBudget() {
+        if (!memoryGuardEnabled) return;
+        long est = dataSizeEstimator.estimateBytes(this);
+        if (est > maxPayloadBytes) {
+            throw new DataException(
+                "DataModel payload exceeds limit: estimated=" + est + " bytes, limit=" + maxPayloadBytes +
+                " bytes. Narrow the query or increase the limit via setMaxPayloadBytes()."
+            );
+        }
     }
 
     /**
@@ -476,17 +525,7 @@ public final class DataModel implements Cloneable{
      */
     @Override
     public String toString() {
-        String r = "";
-        for (String key : cols) {
-            r =  r + key + "\t";
-        }
-        for (HashMap<String, Object> map : rows) {
-            r =  r + "\n";
-            for (String key : cols) {
-                r =  r + map.get(key) + "\t";
-            }
-        }
-        return r;
+        return toString("\t");
     }
 
     /**
@@ -504,17 +543,28 @@ public final class DataModel implements Cloneable{
      * @return a string representation of the DataModel with the specified separator.
      */
     public String toString(String separator) {
-        String r = "";
-        for (String key : cols) {
-            r =  r + key + separator;
+        if (cols.isEmpty() && rows.isEmpty()) return "";
+
+        StringBuilder sb = new StringBuilder(256);
+
+        // 헤더(컬럼) 출력: 마지막 구분자 없이
+        for (Iterator<String> it = cols.iterator(); it.hasNext(); ) {
+            sb.append(it.next());
+            if (it.hasNext()) sb.append(separator);
         }
+
+        // 각 로우 출력
         for (HashMap<String, Object> map : rows) {
-            r =  r + "\n";
-            for (String key : cols) {
-                r =  r + map.get(key) + separator;
+            sb.append('\n');
+            for (Iterator<String> it = cols.iterator(); it.hasNext(); ) {
+                String key = it.next();
+                Object v = map.get(key);
+                sb.append(String.valueOf(v)); // null 안전
+                if (it.hasNext()) sb.append(separator);
             }
         }
-        return r;
+
+        return sb.toString();
     }
 
     /**
@@ -801,6 +851,7 @@ public final class DataModel implements Cloneable{
         if(!hasColumn(column)) return this;
         for (HashMap<String, Object> map : rows) {
             map.put(column, value);
+            enforceMemoryBudget();
         }
         return this;
     }
@@ -850,6 +901,7 @@ public final class DataModel implements Cloneable{
             try {
                 Object formattedValue = formatter.apply(originalValue);
                 row.put(column, formattedValue);
+                enforceMemoryBudget();
             } catch (Exception e) {
                 throw new DataException("Error formatting value: " + originalValue + ". Leaving it as is.");
             }
@@ -933,6 +985,7 @@ public final class DataModel implements Cloneable{
         }
 
         rows.add(rowIndex, newRow);
+        enforceMemoryBudget();
         return this;
     };
 
@@ -1032,7 +1085,7 @@ public final class DataModel implements Cloneable{
         for (String key : cols) {
             if (newRow.containsKey(key)) {
                 Object value = getConverter().getConvertValueToDataModelRowValue(newRow.get(key));
-                if (!rows.isEmpty()) {
+                if (strictColumnType && !rows.isEmpty()) {
                     if (rows.get(rows.size() - 1).get(key) != null && value != null) {
                         if (rows.get(rows.size() - 1).get(key).getClass() != value.getClass()) {
                             throw new DataException("Please enter the same type. Column: " + key);
@@ -1047,6 +1100,7 @@ public final class DataModel implements Cloneable{
     
         // Insert the new row at the specified index
         rows.add(rowIndex, hm);
+        enforceMemoryBudget();
     
         return this;
     }
@@ -1361,18 +1415,44 @@ public final class DataModel implements Cloneable{
      * @throws DataException An error occurs if changes cannot be made through setFreeze.
      */
     public DataModel addRows(JsonNode node) {
-        if(freezeValues) {
+        if (freezeValues) {
             throw new DataException("This DataModel is frozen and cannot be modified.");
         }
-        if (node.isObject()) {
-            addRow(parseJsonObjectToDataModel(node));
-        } 
-        else if (node.isArray()) {
-            for (JsonNode elementNode : node) {
-                addRow(parseJsonObjectToDataModel(elementNode));
-            }
+        if (node == null || node.isNull()) {
+            return this;
         }
-        return this;
+
+        if (node.isObject()) {
+            return addRow(parseJsonObjectToDataModel(node));
+        }
+
+        if (node.isArray()) {
+            for (JsonNode el : node) {
+                if (el == null || el.isNull()) {
+                    HashMap<String,Object> row = new HashMap<>();
+                    row.put("value", null);
+                    addRow(row);
+                    continue;
+                }
+
+                if (el.isObject()) {
+                    addRow(parseJsonObjectToDataModel(el));
+                } else if (el.isArray()) {
+                    HashMap<String,Object> row = new HashMap<>();
+                    row.put("value", parseJsonArrayToDataModel(el));
+                    addRow(row);
+                } else {
+                    HashMap<String,Object> row = new HashMap<>();
+                    row.put("value", getConverter().getConvertJsonValueNodeToDataModelRowValue(el));
+                    addRow(row);
+                }
+            }
+            return this;
+        }
+
+        HashMap<String,Object> row = new HashMap<>();
+        row.put("value", getConverter().getConvertJsonValueNodeToDataModelRowValue(node));
+        return addRow(row);
     }
 
     /**
@@ -1735,14 +1815,16 @@ public final class DataModel implements Cloneable{
 
         value = getConverter().getConvertValueToDataModelRowValue(value);
 
-        for(int i = 0; i < rows.size(); i++) {
-            if(rowIndex == i) continue;
-            if(rows.get(i).get(column) != null && value != null) {
-                if(rows.get(i).get(column).getClass() == value.getClass()) {
-                    break;
-                }
-                else {
-                    throw new DataException(" Please enter the same type. Column: " + column);
+        if(strictColumnType) {
+            for(int i = 0; i < rows.size(); i++) {
+                if(rowIndex == i) continue;
+                if(rows.get(i).get(column) != null && value != null) {
+                    if(rows.get(i).get(column).getClass() == value.getClass()) {
+                        break;
+                    }
+                    else {
+                        throw new DataException(" Please enter the same type. Column: " + column);
+                    }
                 }
             }
         }
@@ -1750,6 +1832,7 @@ public final class DataModel implements Cloneable{
         // Set the value in the specified row and column
         HashMap<String, Object> row = rows.get(rowIndex);
         row.put(column, value);
+        enforceMemoryBudget();
     
         return this;
     }
@@ -3004,5 +3087,64 @@ public final class DataModel implements Cloneable{
     public DataModel setFreezeValues() {
         freezeValues = true;
         return this;
+    }
+
+    /**
+     * Returns the current column type consistency policy.
+     * When {@code true} (strict mode), this {@link DataModel} enforces that each column keeps
+     * a consistent non-null Java type across rows during write operations such as
+     * {@code addRow(...)} and {@code setValue(...)}. When {@code false} (flexible mode, default),
+     * cross-row type consistency is not enforced.
+     *
+     * @return {@code true} if strict column type checking is enabled; {@code false} otherwise
+     */
+    public boolean isStrictColumnType() {
+        return strictColumnType;
+    }
+
+    /**
+     * Sets the column type consistency policy.
+     * 
+     * If set to {@code true} (strict mode), write operations (e.g., {@code addRow(...)} and
+     * {@code setValue(...)}) will throw a {@link io.github.hison.data.exception.DataException}
+     * when attempting to insert a non-null value whose Java type differs from an already
+     * present non-null value in the same column. If set to {@code false} (flexible mode),
+     * mixed types in the same column are allowed.
+     * 
+     * Default is {@code false} (flexible).
+     *
+     * @param strictColumnType {@code true} to enable strict per-column type checking; {@code false} to allow mixed types
+     * @return this {@link DataModel} instance for method chaining
+     */
+    public DataModel setStrictColumnType(boolean strictColumnType) {
+        this.strictColumnType = strictColumnType;
+        return this;
+    }
+
+    /* ===========================================================
+    * Size Estimator SPI (nested types)
+    * ===========================================================
+    */
+
+    /** Strategy interface for estimating DataModel payload size in bytes. */
+    public interface DataSizeEstimator {
+        /** Estimates the payload size of the given model (in bytes). */
+        long estimateBytes(DataModel model);
+    }
+
+    /** JSON-serialization-based size estimator (accurate but relatively more expensive). */
+    public static class JsonSizeEstimator implements DataSizeEstimator {
+        @Override
+        public long estimateBytes(DataModel model) {
+            try {
+                // Use the converter’s ObjectMapper to stay consistent with your JSON shape
+                ObjectMapper om = model.getConverter().getObjectMapperForConvertDataModelToJson();
+                byte[] bytes = om.writeValueAsBytes(model.getConvertedJson()); // estimate actual JSON payload
+                return bytes.length;
+            } catch (Exception e) {
+                // On failure, return a very large value to trigger the guard conservatively
+                return Long.MAX_VALUE;
+            }
+        }
     }
 }

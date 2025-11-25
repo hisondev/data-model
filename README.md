@@ -13,6 +13,19 @@ For enhanced and convenient front-end and server communication, this library can
 ## Getting Started
 To start using the `data-model` library in your project, follow the installation and usage instructions below.
 
+## Version Compatibility (Spring Boot)
+
+> **Quick rule:**  
+> - **Spring Boot 2.7.x** → use **data-model 1.x** (`javax.*`)  
+> - **Spring Boot 3.x+** → use **data-model 2.x** (`jakarta.*`), **Java 17+** (recommended 21)
+
+| data-model | Spring Boot | Java | Namespace |
+|------------|-------------|------|-----------|
+| **1.x**    | **2.7.x**   | 8+   | `javax.*` |
+| **2.x**    | **3.x+**    | 17+  | `jakarta.*` |
+
+If you are migrating to Spring Boot 3.x, switch your dependency to **data-model 2.x** and ensure your project uses **Java 17+**.
+
 ### Prerequisites
 Before you can use the `data-model` library, you need to have the following software installed on your system:
 - Java Development Kit (JDK) 8 or higher
@@ -23,9 +36,17 @@ You can add the `data-model` library to your project by including the following 
 
 ```xml
 <dependency>
-    <groupId>io.github.hisondev</groupId>
-    <artifactId>data-model</artifactId>
-    <version>1.0.7</version>
+  <groupId>io.github.hisondev</groupId>
+  <artifactId>data-model</artifactId>
+  <version>1.0.8</version>
+</dependency>
+```
+
+```xml
+<dependency>
+  <groupId>io.github.hisondev</groupId>
+  <artifactId>data-model</artifactId>
+  <version>2.0.0</version>
 </dependency>
 ```
 
@@ -87,6 +108,48 @@ public class DemoApplication {
 }
 ```
 ***This setup allows you to customize how data is converted throughout your application by providing your own implementation of the DataConverterDefault class.***
+
+### Column Type Checking Policy (Flexible vs Strict) (since v2.0)
+By default, `DataModel` uses a **flexible** type policy for column values — it does **not** enforce cross-row type consistency.
+If you prefer to enforce that each column must keep the **same Java type across all rows**, enable **strict mode**:
+
+```java
+DataModel dm = new DataModel();
+// default: flexible (no cross-row type enforcement)
+dm.setStrictColumnType(true); // enable strict mode
+```
+
+## Memory Budget Guard (since v2.0)
+To prevent accidental oversized payloads (e.g., overly broad date ranges) from causing Full GC or server instability,  
+`DataModel` enforces a **memory budget** and throws a `DataException` when the estimated size exceeds the limit.
+
+### Defaults
+- Default budget: **32 MB** (tune per your policy)
+- Heavy operations (e.g., `addRows(JsonNode)`, `addRows(ResultSet)`, `addRows(List<Object[]>, String[])`) check **immediately after completion**
+- Small/frequent mutations (`addRow(...)`, `setValue(...)`, `removeRow(...)`, etc.) use **throttled checks** every _N_ mutations
+- On exceed: throws `DataException("DataModel estimated size exceeds the configured budget...")`
+
+### Quick Start
+```java
+DataModel dm = new DataModel();
+
+// 1) Adjust budget (default 32 MB → 16 MB)
+dm.setMaxEstimatedBytes(16L * 1024 * 1024);
+
+// 2) (Optional) Tune throttled mutation check interval (default 128)
+dm.setMutationCheckInterval(128);
+
+// 3) (Optional) Swap estimator (default: JSON-serialization-based)
+dm.setDataSizeEstimator(new DataModel.JsonSizeEstimator());
+
+// 4) (Optional) Batch mode for large imports
+dm.beginBulkUpdate();
+try {
+    // ... thousands of addRow / setValue calls ...
+} finally {
+    dm.endBulkUpdate(); // forces a final check
+}
+```
 
 ### DataModelDeserializer and DataModelSerializer
 The `DataModelDeserializer` and `DataModelSerializer` classes are used to convert data between the JSON format (used for communication between the front end and back end) and the `DataModel` object format used within your application. This allows for seamless data exchange in a structured format.
