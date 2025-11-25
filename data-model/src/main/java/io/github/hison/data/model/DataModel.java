@@ -102,7 +102,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * </ul>
  *
  * @author Hani son
- * @version 1.0.7
+ * @version 2.0.0
  */
 @JsonDeserialize(using = DataModelDeserializer.class)
 @JsonSerialize(using = DataModelSerializer.class)

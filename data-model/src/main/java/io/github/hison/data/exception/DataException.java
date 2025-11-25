@@ -9,7 +9,7 @@ package io.github.hison.data.exception;
  * of what went wrong during data operations.</p>
  *
  * @author Hani son
- * @version 1.0.7
+ * @version 2.0.0
  */
 public class DataException extends RuntimeException {
     /**
