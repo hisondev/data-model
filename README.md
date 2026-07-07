@@ -28,7 +28,7 @@ If you are migrating to Spring Boot 3.x, switch your dependency to **data-model 
 
 ### Prerequisites
 Before you can use the `data-model` library, you need to have the following software installed on your system:
-- Java Development Kit (JDK) 8 or higher
+- Java Development Kit (JDK) 8 or higher (v2.x requires JDK 21)
 - Apache Maven (for building the project)
 
 ### Installation
@@ -46,15 +46,15 @@ You can add the `data-model` library to your project by including the following 
 <dependency>
   <groupId>io.github.hisondev</groupId>
   <artifactId>data-model</artifactId>
-  <version>2.0.0</version>
+  <version>2.0.1</version>
 </dependency>
 ```
 
 ## Usage
 ### DataWrapper and DataModel Utilities
 ```java
-import io.github.hisondev.datamodel.DataWrapper;
-import io.github.hisondev.datamodel.DataModel;
+import io.github.hison.data.wrapper.DataWrapper;
+import io.github.hison.data.model.DataModel;
 
 // Example of using DataWrapper
 DataWrapper wrapper = new DataWrapper();
@@ -75,8 +75,8 @@ Here is an example of how to create and register a custom data converter:
 Define a class that extends `DataConverterDefault` and override necessary methods for customization.
 
 ```java
-import io.github.hisondev.datamodel.converter.DataConverterDefault;
-import io.github.hisondev.datamodel.converter.DataConverterFactory;
+import io.github.hison.data.converter.DataConverterDefault;
+import io.github.hison.data.converter.DataConverterFactory;
 
 public class CustomDataConverter extends DataConverterDefault {
     public static void register() {
@@ -158,8 +158,8 @@ Here is an example of how these classes can be utilized to serialize and deseria
 
 Serialization:
 ```java
-import io.github.hisondev.datamodel.DataModel;
-import io.github.hisondev.datamodel.model.DataModelSerializer;
+import io.github.hison.data.model.DataModel;
+import io.github.hison.data.model.DataModelSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 // Create a DataModel instance
@@ -175,8 +175,8 @@ System.out.println("Serialized JSON: " + jsonString);
 
 Deserialization:
 ```java
-import io.github.hisondev.datamodel.DataModel;
-import io.github.hisondev.datamodel.model.DataModelDeserializer;
+import io.github.hison.data.model.DataModel;
+import io.github.hison.data.model.DataModelDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 // JSON string received from the front end
@@ -188,6 +188,16 @@ DataModel model = mapper.readValue(jsonString, DataModel.class);
 System.out.println("Deserialized DataModel: " + model);
 ```
 ***By using `DataModelSerializer` and `DataModelDeserializer`, you can ensure that the data structure remains consistent and easily manageable across different layers of your application. This is particularly useful for handling complex data interactions in modern web applications.***
+
+## Changelog
+
+### 2.0.1
+- **Fix (freeze)**: `filterAndModify` now respects the frozen state (previously it could rewrite rows even after `setFreeze()`). Freeze checks are unified — structural changes (add/remove row·column, `clear`, `sort`, `filterAndModify`, `insert`) are governed by `setFreeze()`, while value changes (`setValue`, `setColumnSameValue/Format`, `searchAndModify`) are governed by `setFreezeValues()`. So `setFreezeValues()` now correctly locks values while still allowing structural changes.
+- **Fix (encapsulation)**: `DataModel.getRows()` now returns deep copies of each row, so modifying the returned list's rows no longer corrupts the original DataModel (consistent with `getRow()`).
+- **Fix (encapsulation)**: `DataWrapper.putDataModel()` now stores a clone of the DataModel (consistent with `put(...)`), so later external changes to the passed instance don't affect the stored value.
+- **Add**: `equals()`/`hashCode()` for `DataModel` and `DataWrapper` (value-based) — useful when using them as DTO replacements.
+- **Improvement**: value normalization now explicitly handles `BigDecimal`, `BigInteger`, `LocalDate`, and `LocalTime`.
+- **Docs**: corrected `getString`/`getDataModel` Javadoc (they return `null`, they do not throw), `DataException` Javadoc, README import paths (`io.github.hison.data.*`) and version.
 
 ## Contributing
 Contributions are welcome! If you have any ideas, suggestions, or bug reports, please open an issue or submit a pull request on GitHub. Make sure to follow the project's code style and add tests for any new features or changes.

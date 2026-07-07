@@ -38,7 +38,7 @@ import io.github.hison.data.model.DataModel;
  * </ul>
  * 
  * @author Hani son
- * @version 2.0.0
+ * @version 2.0.1
  */
 @JsonDeserialize(using = DataWrapperDeserializer.class)
 @JsonSerialize(using = DataWrapperSerializer.class)
@@ -123,12 +123,12 @@ public class DataWrapper implements Cloneable{
 
     /**
      * Retrieves the String value associated with the specified key from this DataWrapper.
-     * If the key exists but the value is null, it returns null. If the key exists and the value is a String, it returns the String value.
-     * If the key does not exist or the value is not a String, a DataException is thrown.
+     * If the key exists and the value is a String, it returns the String value.
+     * If the key does not exist, or the value is null, or the value is not a String, {@code null} is returned
+     * (this method does not throw).
      *
      * @param key the key whose associated String value is to be returned.
-     * @return The String value associated with the specified key, or null if the key exists but the value is null.
-     * @throws DataException if the key does not exist or if the value is not a String.
+     * @return The String value associated with the specified key, or {@code null} if absent/null/not a String.
      */
     public String getString(String key) {
         if (data.containsKey(key) && data.get(key) == null) {
@@ -142,25 +142,27 @@ public class DataWrapper implements Cloneable{
 
     /**
      * Associates the specified dataModel instance with the specified key in this DataWrapper.
+     * A deep copy (clone) of the dataModel is stored, so later external changes to the passed
+     * instance do not affect the value held here. (Consistent with {@link #put(String, Object)}.)
      *
      * @param key   the key with which the specified dataModel instance is to be associated.
-     * @param value the dataModel instance to be associated with the specified key.
+     * @param value the dataModel instance to be associated with the specified key; a clone is stored.
      * @return this DataWrapper instance to allow for method chaining.
      */
     public DataWrapper putDataModel(String key, DataModel value) {
         checkImmutableKey(key);
-        data.put(key, value);
+        data.put(key, value == null ? null : value.clone());
         return this;
     }
 
     /**
      * Retrieves the dataModel instance associated with the specified key from this DataWrapper.
-     * If the key exists but the value is null, it returns null. If the key exists and the value is a dataModel instance, it returns a clone of the dataModel instance.
-     * If the key does not exist or the value is not a dataModel instance, a DataException is thrown.
+     * If the key exists and the value is a dataModel instance, it returns a clone of the dataModel instance.
+     * If the key does not exist, or the value is null, or the value is not a dataModel instance, {@code null} is returned
+     * (this method does not throw).
      *
      * @param key the key whose associated dataModel instance is to be returned.
-     * @return A clone of the dataModel instance associated with the specified key, or null if the key exists but the value is null.
-     * @throws DataException if the key does not exist or if the value is not a dataModel instance.
+     * @return A clone of the dataModel instance associated with the specified key, or {@code null} if absent/null/not a dataModel.
      */
     public DataModel getDataModel(String key) {
         if (data.containsKey(key) && data.get(key) == null) {
@@ -313,8 +315,32 @@ public class DataWrapper implements Cloneable{
      * @return {@code true} if this DataWrapper contains a mapping for the specified key in either the strings map or the dataModels map; {@code false} otherwise.
      */
     public boolean containsKey(String key) {
-        if(this.data.containsKey(key)) return true;
-        return false;
+        return this.data.containsKey(key);
+    }
+
+    /**
+     * Compares this DataWrapper with another for value equality.
+     * Two DataWrappers are equal when their underlying key/value maps are equal
+     * (DataModel values are compared via {@link DataModel#equals(Object)}).
+     *
+     * @param o the object to compare with
+     * @return {@code true} if both wrappers hold equal data
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DataWrapper)) return false;
+        return this.data.equals(((DataWrapper) o).data);
+    }
+
+    /**
+     * Returns a hash code consistent with {@link #equals(Object)}, derived from the underlying data map.
+     *
+     * @return the hash code of this DataWrapper
+     */
+    @Override
+    public int hashCode() {
+        return this.data.hashCode();
     }
 
     @Override

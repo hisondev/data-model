@@ -1,7 +1,11 @@
 package io.github.hison.data.converter;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -61,7 +65,7 @@ import io.github.hison.data.model.DataModel;
  * enhancing the adaptability of the DataModel to various data processing scenarios.
  * 
  * @author Hani son
- * @version 2.0.0
+ * @version 2.0.1
  */
 public class DataConverterDefault implements DataConverter{
     /**
@@ -346,17 +350,24 @@ public class DataConverterDefault implements DataConverter{
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(getDateFormat());
             return ((LocalDateTime)value).format(formatter);
         }
-        List<Class<?>> primitiveWrappers = Arrays.asList(
+        // LocalDate/LocalTime은 ISO-8601 문자열로 저장한다 (LocalDateTime만 getDateFormat 패턴 적용)
+        else if (value.getClass() == LocalDate.class || value.getClass() == LocalTime.class) {
+            return value.toString();
+        }
+        // 원시 래퍼 + 임의정밀 수치(BigDecimal/BigInteger)는 문자열로 정규화한다 (JS/JSON 호환)
+        List<Class<?>> stringifiableValues = Arrays.asList(
             Boolean.class,
             Character.class,
             Byte.class,
-            Short.class, 
+            Short.class,
             Integer.class,
             Long.class,
             Float.class,
-            Double.class
+            Double.class,
+            BigInteger.class,
+            BigDecimal.class
         );
-        if (primitiveWrappers.contains(value.getClass())) {
+        if (stringifiableValues.contains(value.getClass())) {
             return value.toString();
         } else {
             String valueToString = value.toString();

@@ -18,7 +18,7 @@ jv/data-model/          ← git 저장소 루트 (README, LICENSE)
 
 ## 핵심 사실
 
-- **Maven**: `io.github.hisondev:data-model:2.0.0` / Java 21 / jackson-databind 2.17.2 + jakarta.servlet-api 6.0.0(둘 다 provided·optional) / MIT
+- **Maven**: `io.github.hisondev:data-model:2.0.1`(2026-07-06 보완, 배포 대기) / Java 21 / jackson-databind 2.17.2 + jakarta.servlet-api 6.0.0(둘 다 provided·optional) / MIT
 - **패키지는 `io.github.hison.data.*`** (groupId·README 표기와 다름 — 혼동 주의)
 - 버전 정책: 1.x = Spring Boot 2.7(javax) / 2.x = Spring Boot 3+(jakarta)
 - **DataWrapper**: 값은 String/DataModel/null만 허용(그 외 DataException). DataModel은 put/get 시 깊은 복사. 생성 시 `"DATAWRAPPER":"TRUE"` 검증 키 자동 삽입. addImmutableKey로 키 불변화. 체이닝 지원
@@ -33,12 +33,14 @@ jv/data-model/          ← git 저장소 루트 (README, LICENSE)
 - 전체 메서드 표: `../../../md/hisondev-hisonjv.md`의 DataModel 섹션 (일부 누락 있음 — 가이드의 '알려진 이슈' 참조)
 - 생태계 전체: `../../../md/hisondev-ecosystem.md`
 
-## 알려진 이슈 (수정 금지 — 추후 소유자와 재정리 예정)
+## 보완 이력 (v2.0.1 — 2026-07-06 완료, 배포 대기)
 
-1. README 예제 import가 구버전 `io.github.hisondev.datamodel.*` (실제: `io.github.hison.data.*`), "JDK 8+" 표기 잔존
-2. 공식 사이트 API 표 누락: DataWrapper.remove/addImmutableKey, DataModel 메모리 가드·isFreeze·insert·strictColumnType 계열. `setFreezeDataModel`(표) ≠ `setFreeze`(실제)
-3. 사이트 getting-started의 직렬화 예시(`{"columns":[...],"rows":[[...]]}`)는 실제 형식과 다름
-4. DataException javadoc의 "from Spring framework" 서술 오류
+코드 버그·캡슐화·문서 보완. 상세 = `../../../md/hisondev-data-model.md` 9절 / README Changelog. 스모크 테스트 9종 통과.
+- 코드: **freeze 정상화**(filterAndModify 버그 + 구조/값 체크 일관화, 값동결 시 구조변경 허용) / getRows 깊은복사 / DataWrapper.putDataModel clone / equals·hashCode 추가 / 값정규화 BigDecimal·BigInteger·LocalDate·LocalTime / List<T> 조건·containsKey 정리
+- 문서: getString·getDataModel javadoc(null 반환), DataException javadoc, README import(`io.github.hison.data.*`)·버전·JDK·Changelog
+- ⚠️ 하위호환 유지(버그픽스·additive). getRows/putDataModel은 "반환/저장 시 복사"라 안전성 강화 방향
+- ⚠️ **미수정(별도 결정)**: 메모리 가드 O(n²) — estimator가 매번 전체 직렬화, addRows 대량 시 병목. 안전성은 정상. 근본 개선은 회귀 리스크로 논의 대기
+- 남은 문서 이슈(사이트 API 표·직렬화 예시·숫자문자열화 명시) → **github.io 단계**
 
 ## 작업 규칙
 

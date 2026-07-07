@@ -2,14 +2,15 @@ package io.github.hison.data.exception;
 
 /**
  * The {@code DataException} class represents exceptions specific to data processing
- * within the application. It is a custom exception that extends {@link RuntimeException} 
- * from Spring framework to provide context about data-related failures.
- * 
+ * within the DataWrapper/DataModel framework. It is a custom exception that extends
+ * {@link RuntimeException} (from the Java standard library) to provide context about
+ * data-related failures without forcing checked-exception handling.
+ *
  * <p>This exception can be used to wrap other exceptions, providing a higher-level explanation
  * of what went wrong during data operations.</p>
  *
  * @author Hani son
- * @version 2.0.0
+ * @version 2.0.1
  */
 public class DataException extends RuntimeException {
     /**
