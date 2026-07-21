@@ -848,34 +848,51 @@ public final class DataModel implements Cloneable{
 
     /**
      * Sets the same value for a specified column across all rows of this dataModel instance.
-     * 
+     *
      * <p>This method assigns a uniform value to a specific column for all rows in the current
-     * dataModel instance. If the column does not exist within the dataModel, this method
-     * does nothing and simply returns the current instance.</p>
-     * 
-     * <p><b>Note:</b> It's advisable to first check if the column exists using the {@code hasColumn}
-     * method before using this method to ensure intended behavior.</p>
-     * 
+     * dataModel instance. If the column does not exist within the dataModel, it is created
+     * automatically before the value is assigned — matching the behavior of the hisonjs
+     * (client-side) {@code setColumnSameValue} implementation.</p>
+     *
+     * <p><b>Note (v2.0.2):</b> Previous versions silently did nothing when the column was
+     * absent, which caused hard-to-detect failures for injection-style usages. Creating the
+     * column is treated as a <i>structural</i> change, so it additionally requires that the
+     * model is not structurally frozen ({@code setFreeze}).</p>
+     *
+     * <p>The value is normalized through the configured {@link DataConverter} before being
+     * stored, consistently with {@code setValue} and {@code addRow}.</p>
+     *
      * <p><b>Example:</b><br>
      * {@code
      * dataModel model = new dataModel();
      * model.setColumns("Name", "Age");
      * model.addRow(new HashMap<String, Object>(){{ put("Name", "John"); put("Age", 30); }});
      * model.addRow(new HashMap<String, Object>(){{ put("Name", "Jane"); put("Age", 25); }});
-     * model.setColumnSameValue("Age", 28); // This will set the "Age" for both rows to 28.
+     * model.setColumnSameValue("Age", 28);       // This will set the "Age" for both rows to 28.
+     * model.setColumnSameValue("Grade", "A");    // "Grade" column is created and set on all rows.
      * }
      * </p>
-     * 
+     *
      * @param column The name of the column for which the value is to be uniformly set.
      * @param value The value to be set across all rows for the specified column.
      * @return The current dataModel instance with updated values for the specified column.
-     * @throws DataException An error occurs if changes cannot be made through setFreeze.
+     * @throws DataException If values are frozen ({@code setFreezeValues}), or if the column
+     *         needs to be created while the structure is frozen ({@code setFreeze}).
      */
     public DataModel setColumnSameValue(String column, Object value) {
         if(freezeValues) {
             throw new DataException("This DataModel is frozen and cannot be modified.");
         }
-        if(!hasColumn(column)) return this;
+        if(!hasColumn(column)) {
+            // hisonjs와 동일 스펙: 컬럼이 없으면 자동 추가 (v2.0.2 — 기존의 조용한 no-op은
+            // 주입성 사용처에서 원인 추적이 어려운 무동작을 낳았음).
+            // 컬럼 신설 = 구조 변경이므로 freeze(구조 동결)도 확인한다.
+            if(freeze) {
+                throw new DataException("This DataModel is frozen and cannot be modified.");
+            }
+            cols.add(column);
+        }
+        value = getConverter().getConvertValueToDataModelRowValue(value);
         for (HashMap<String, Object> map : rows) {
             map.put(column, value);
             enforceMemoryBudget();

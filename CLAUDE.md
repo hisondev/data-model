@@ -18,7 +18,7 @@ jv/data-model/          ← git 저장소 루트 (README, LICENSE)
 
 ## 핵심 사실
 
-- **Maven**: `io.github.hisondev:data-model:2.0.1`(2026-07-06 보완, 배포 대기) / Java 21 / jackson-databind 2.17.2 + jakarta.servlet-api 6.0.0(둘 다 provided·optional) / MIT
+- **Maven**: `io.github.hisondev:data-model:2.0.2`(2026-07-21 setColumnSameValue 스펙 수정, 배포 대기 — 2.0.1은 배포 완료) / Java 21 / jackson-databind 2.17.2 + jakarta.servlet-api 6.0.0(둘 다 provided·optional) / MIT
 - **패키지는 `io.github.hison.data.*`** (groupId·README 표기와 다름 — 혼동 주의)
 - 버전 정책: 1.x = Spring Boot 2.7(javax) / 2.x = Spring Boot 3+(jakarta)
 - **DataWrapper**: 값은 String/DataModel/null만 허용(그 외 DataException). DataModel은 put/get 시 깊은 복사. 생성 시 `"DATAWRAPPER":"TRUE"` 검증 키 자동 삽입. addImmutableKey로 키 불변화. 체이닝 지원
@@ -33,7 +33,15 @@ jv/data-model/          ← git 저장소 루트 (README, LICENSE)
 - 전체 메서드 표: `../../../md/hisondev-hisonjv.md`의 DataModel 섹션 (일부 누락 있음 — 가이드의 '알려진 이슈' 참조)
 - 생태계 전체: `../../../md/hisondev-ecosystem.md`
 
-## 보완 이력 (v2.0.1 — 2026-07-06 완료, 배포 대기)
+## 보완 이력 (v2.0.2 — 2026-07-21 완료, 배포 대기)
+
+**`setColumnSameValue` 스펙 정합 수정** (nonoshow 역검증에서 발견 — 상세 = `../../../md/hisondev-data-model.md` 9-1절):
+- 🔴 컬럼 부재 시 **조용한 no-op → 자동 컬럼 생성**으로 변경 (hisonjs는 원래 자동 생성이 문서화된 스펙 — JS↔Java 불일치 버그였음. nonoshow ApiHandler actorId 주입 전면 무동작의 원인)
+- 컬럼 신설 = 구조 변경이므로 `setFreeze` 체크 추가 (값 변경은 기존대로 `setFreezeValues`)
+- 값을 컨버터(`getConvertValueToDataModelRowValue`) 경유로 통일 (기존 raw 삽입 — setValue/addRow와 불일치였음)
+- pom 2.0.1→2.0.2, README Changelog, Javadoc 갱신. 커밋 문구(한 줄): `v2.0.2: Auto-add missing column in setColumnSameValue (align with hisonjs spec) + route value through converter`
+
+## 보완 이력 (v2.0.1 — 2026-07-06 완료, 배포 완료)
 
 코드 버그·캡슐화·문서 보완. 상세 = `../../../md/hisondev-data-model.md` 9절 / README Changelog. 스모크 테스트 9종 통과.
 - 코드: **freeze 정상화**(filterAndModify 버그 + 구조/값 체크 일관화, 값동결 시 구조변경 허용) / getRows 깊은복사 / DataWrapper.putDataModel clone / equals·hashCode 추가 / 값정규화 BigDecimal·BigInteger·LocalDate·LocalTime / List<T> 조건·containsKey 정리

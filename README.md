@@ -46,7 +46,7 @@ You can add the `data-model` library to your project by including the following 
 <dependency>
   <groupId>io.github.hisondev</groupId>
   <artifactId>data-model</artifactId>
-  <version>2.0.1</version>
+  <version>2.0.2</version>
 </dependency>
 ```
 
@@ -190,6 +190,10 @@ System.out.println("Deserialized DataModel: " + model);
 ***By using `DataModelSerializer` and `DataModelDeserializer`, you can ensure that the data structure remains consistent and easily manageable across different layers of your application. This is particularly useful for handling complex data interactions in modern web applications.***
 
 ## Changelog
+
+### 2.0.2
+- **Fix (spec alignment)**: `setColumnSameValue` now **auto-creates the column when it does not exist** (previously a silent no-op), matching the documented hisonjs behavior ("If the column does not exist, it is created automatically"). Column creation counts as a structural change, so it is rejected when the model is structurally frozen (`setFreeze()`); value freezing (`setFreezeValues()`) is checked as before.
+- **Fix (consistency)**: `setColumnSameValue` now routes the value through the configured `DataConverter` (same normalization as `setValue`/`addRow`) — previously raw values were stored, bypassing conversion.
 
 ### 2.0.1
 - **Fix (freeze)**: `filterAndModify` now respects the frozen state (previously it could rewrite rows even after `setFreeze()`). Freeze checks are unified — structural changes (add/remove row·column, `clear`, `sort`, `filterAndModify`, `insert`) are governed by `setFreeze()`, while value changes (`setValue`, `setColumnSameValue/Format`, `searchAndModify`) are governed by `setFreezeValues()`. So `setFreezeValues()` now correctly locks values while still allowing structural changes.
